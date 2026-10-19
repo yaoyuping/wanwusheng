@@ -116,7 +116,8 @@ function v2mapModal(sid){const s=state.sightings.find(x=>x.id===sid);if(!s||!Num
 }
 
 // ----- DeepSeek 文本+图片真实调用 -----
-async function v2status(){try{const r=await fetch('/api/status',{cache:'no-store'});if(!r.ok)throw Error();ui.apiStatus=await r.json()}catch{ui.apiStatus={deepseek:false,plantnet:false,protected:false,offline:true}}return ui.apiStatus}
+function v2staticHosting(){return location.hostname.endsWith('github.io')||location.hostname.endsWith('netlify.app')||location.protocol==='file:'}
+async function v2status(){if(v2staticHosting()){ui.apiStatus={deepseek:false,plantnet:false,protected:false,offline:true,staticHosting:true};return ui.apiStatus}try{const r=await fetch('/api/status',{cache:'no-store'});if(!r.ok)throw Error();ui.apiStatus=await r.json()}catch{ui.apiStatus={deepseek:false,plantnet:false,protected:false,offline:true}}return ui.apiStatus}
 function v2password(){return sessionStorage.getItem('yiyu-ai-session-password')||''}
 async function v2post(endpoint,data){const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','X-Yiyu-Password':v2password()},body:JSON.stringify(data)});const j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.error||`请求失败（${r.status}）`);return j}
 function v2aiModal(pid='',mode='care'){
@@ -127,7 +128,7 @@ function v2aiModal(pid='',mode='care'){
 function v2plantContext(p){return {name:p.name,latin:p.latin,location:p.location,acquired:p.acquired,light:p.light,status:p.status,lastWatered:p.lastWatered,interval:p.interval,notes:p.notes,logs:(p.logs||[]).slice(0,24).map(l=>({date:l.date,time:l.time,action:l.action,note:l.note}))}}
 async function v2aiRun(pid,mode){const r=$('#v2-ai-result'),button=$('#v2-ai-run');if(!r)return;
  if(mode==='identification'&&!ui.aiImage){toast('请先选择植物照片');return}
- if(location.hostname.endsWith('netlify.app')) {r.innerHTML='<div class="v2-ai-error">此版本已支持在线使用植物档案和养护管理，但 DeepSeek AI 尚未开通。接入带服务端的网站版本后即可使用。</div>';return;}
+ if(v2staticHosting()) {r.innerHTML='<div class="v2-ai-error">此静态网站已支持植物档案和养护管理，但 DeepSeek AI 后端尚未部署。接入独立服务端后即可使用。</div>';return;}
  button.disabled=true;r.innerHTML='<div class="v2-ai-loading">🌿 正在结合植物信息分析，一般需要一些时间……</div>';
  const plant=state.plants.find(x=>x.id===pid)||{};
  try{const j=await v2post('/api/ai',{mode:mode==='identification'?'identify':mode,plant:v2plantContext(plant),question:$('#v2-ai-question')?.value.trim()||'',image:ui.aiImage});r.innerHTML=`<div class="v2-ai-answer"><div class="v2-ai-answer-title">✧ DeepSeek 分析建议 <small>${esc(j.model)}</small></div><div class="v2-ai-answer-text">${esc(j.answer||'没有返回结果').replace(/\n/g,'<br>')}</div><button class="outlined-btn small-btn" data-action="v2-copy-ai">复制分析文字</button></div>`;
