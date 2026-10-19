@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#f9faf7" />
+  <meta name="description" content="一隅 · 你的私人植物图鉴、养护手记与自然观察档案。" />
+  <title>一隅 · 植物手记</title>
+  <link rel="icon" type="image/svg+xml" href="icon.svg" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <meta name="robots" content="noindex,nofollow,noarchive" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="一隅植物" />
+  <link rel="apple-touch-icon" href="icon-180.png" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="upgrade.css" />
+  <link rel="stylesheet" href="v3.css" />
+  <script defer src="app.js"></script>
+  <script defer src="upgrade.js"></script>
+  <script defer src="v3.js"></script>
+</head>
+<body>
+  <div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+  <div class="shell">
+    <aside id="sidebar" class="sidebar">
+      <div class="brand"><div class="brand-mark">❧</div><div><strong>一隅</strong><small>PRIVATE BOTANICAL JOURNAL</small></div></div>
+      <nav id="desktop-nav" class="side-nav" aria-label="主导航"></nav>
+      <div class="sidebar-foot"><div class="side-quote">与草木相处<br>也与时间相处。</div><small>植物有自己的节奏，生活也是。</small></div>
+    </aside>
+    <div class="page">
+      <header class="topbar">
+        <div><div class="eyebrow">A LITTLE CORNER OF NATURE</div><div class="top-title">植物与日常<span class="top-sprout">✳</span></div></div>
+        <button class="round-btn mobile-settings" data-nav="settings" aria-label="设置">⚙</button>
+        <div class="top-actions"><span class="top-today" id="current-date"></span><button class="primary-btn top-add" data-action="new-plant">＋ 收下一株植物</button></div>
+      </header>
+      <main id="app" tabindex="-1"></main>
+      <footer class="site-footer">一隅 · 留给植物，也留给自己的一小片时间 <span>✺</span> 本地私人收藏</footer>
+    </div>
+  </div>
+  <nav id="mobile-nav" class="bottom-nav" aria-label="手机导航"></nav>
+  <div id="modal-root"></div>
+  <div id="toast-root" aria-live="polite"></div>
+  <input type="file" id="import-file" accept="application/json,.json" hidden />
+</body>
+</html>
