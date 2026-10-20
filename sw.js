@@ -1,5 +1,5 @@
-const CACHE='yiyu-plants-v3.1-gh-pages';
-const ASSETS=['./','./index.html','./styles.css','./upgrade.css','./v3.css','./app.js','./upgrade.js','./v3.js','./manifest.webmanifest','./icon.svg','./icon-180.png','./icon-192.png','./icon-512.png',];
+const CACHE='yiyu-plants-v4.5.2-gh-pages';
+const ASSETS=['./','./index.html','./styles.css','./upgrade.css','./v3.css','./v4.css?v=4.5.2','./config.js?v=4.5.2','./app.js','./upgrade.js','./v3.js','./v4.js?v=4.5.2','./manifest.webmanifest','./icon.svg','./icon-180.png','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',e=>{

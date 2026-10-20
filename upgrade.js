@@ -116,10 +116,12 @@ function v2mapModal(sid){const s=state.sightings.find(x=>x.id===sid);if(!s||!Num
 }
 
 // ----- DeepSeek 文本+图片真实调用 -----
-function v2staticHosting(){return location.hostname.endsWith('github.io')||location.hostname.endsWith('netlify.app')||location.protocol==='file:'}
-async function v2status(){if(v2staticHosting()){ui.apiStatus={deepseek:false,plantnet:false,protected:false,offline:true,staticHosting:true};return ui.apiStatus}try{const r=await fetch('/api/status',{cache:'no-store'});if(!r.ok)throw Error();ui.apiStatus=await r.json()}catch{ui.apiStatus={deepseek:false,plantnet:false,protected:false,offline:true}}return ui.apiStatus}
+const V2_API_BASE=String(window.YIYU_API_BASE||'').replace(/\/$/,'');
+function v2apiUrl(path){return V2_API_BASE?V2_API_BASE+path:path}
+function v2staticHosting(){return !V2_API_BASE&&(location.hostname.endsWith('github.io')||location.hostname.endsWith('netlify.app')||location.protocol==='file:'||location.port==='8765')}
+async function v2status(){if(v2staticHosting()){ui.apiStatus={deepseek:false,plantnet:false,gbif:false,protected:false,offline:true,staticHosting:true};return ui.apiStatus}try{const r=await fetch(v2apiUrl('/api/status'),{cache:'no-store'});if(!r.ok)throw Error();ui.apiStatus=await r.json()}catch{ui.apiStatus={deepseek:false,plantnet:false,gbif:false,protected:false,offline:true}}return ui.apiStatus}
 function v2password(){return sessionStorage.getItem('yiyu-ai-session-password')||''}
-async function v2post(endpoint,data){const r=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','X-Yiyu-Password':v2password()},body:JSON.stringify(data)});const j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.error||`请求失败（${r.status}）`);return j}
+async function v2post(endpoint,data){const r=await fetch(v2apiUrl(endpoint),{method:'POST',headers:{'Content-Type':'application/json','X-Yiyu-Password':v2password()},body:JSON.stringify(data)});const j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.error||`请求失败（${r.status}）`);return j}
 function v2aiModal(pid='',mode='care'){
  const p=state.plants.find(x=>x.id===pid);const choose=mode==='identify'?'identification':mode;
  ui.aiImage=null;ui.aiFile=null;
@@ -133,7 +135,7 @@ async function v2aiRun(pid,mode){const r=$('#v2-ai-result'),button=$('#v2-ai-run
  const plant=state.plants.find(x=>x.id===pid)||{};
  try{const j=await v2post('/api/ai',{mode:mode==='identification'?'identify':mode,plant:v2plantContext(plant),question:$('#v2-ai-question')?.value.trim()||'',image:ui.aiImage});r.innerHTML=`<div class="v2-ai-answer"><div class="v2-ai-answer-title">✧ DeepSeek 分析建议 <small>${esc(j.model)}</small></div><div class="v2-ai-answer-text">${esc(j.answer||'没有返回结果').replace(/\n/g,'<br>')}</div><button class="outlined-btn small-btn" data-action="v2-copy-ai">复制分析文字</button></div>`;
  }catch(e){r.innerHTML=`<div class="v2-ai-error">${esc(e.message)}。请检查服务端 API Key、余额、网络和访问口令。</div>`}finally{button.disabled=false}}
-function v2settings(){return `<div class="panel v2-ai-settings"><div class="v2-ai-settings-head"><div><h3>✧ DeepSeek AI 植物助手</h3><p class="setting-desc">支持看图识植物、黄叶/虫害辅助排查、根据历史记录生成养护建议。</p></div><span class="v2-ai-state" id="v2-ai-status">检查连接中…</span></div><p>AI 密钥保存在你运行的网站服务端，不会写入浏览器、网页源代码或植物备份。</p><div class="field"><label for="v2-session-password">访问口令（仅当网站服务端启用了 APP_PASSWORD 时填写）</label><input type="password" id="v2-session-password" value="${esc(v2password())}" autocomplete="off" placeholder="个人站点访问口令"></div><div class="setting-actions"><button class="primary-btn" data-action="v2-save-password">保存本次会话口令</button><button class="outlined-btn" data-action="v2-refresh-api">检测 AI 接口</button></div><p class="setting-desc">打开前先运行 <code>node server.mjs</code>；在系统环境变量中配置 <code>DEEPSEEK_API_KEY</code>。远程使用请部署 HTTPS 并设置 APP_PASSWORD。</p></div>`}
+function v2settings(){return `<div class="panel v2-ai-settings"><div class="v2-ai-settings-head"><div><h3>✧ 一隅 AI 植物助手</h3><p class="setting-desc">Pl@ntNet 负责候选识别，GBIF 核对学名，DeepSeek 提供养护问答与照片分析。</p></div><span class="v2-ai-state" id="v2-ai-status">检查连接中…</span></div><p>所有第三方 API 密钥只保存在 Vercel 服务端环境变量中，不会写入网页、浏览器或植物备份。</p><div class="field"><label for="v2-session-password">AI 访问口令</label><input type="password" id="v2-session-password" value="${esc(v2password())}" autocomplete="off" placeholder="输入部署时设置的一隅访问口令"></div><div class="setting-actions"><button class="primary-btn" data-action="v2-save-password">保存本次会话口令</button><button class="outlined-btn" data-action="v2-refresh-api">检测服务连接</button></div><p class="setting-desc">访问口令仅保存在当前标签页的会话中，关闭标签页后自动清除。照片仅在你点击识别或分析后发送。</p></div>`}
 recognizeView=function(){let s=v2Orig.recognizeView();const extra=`<div class="v2-ai-recognition panel"><div><h3>✧ 或用 DeepSeek 识别植物</h3><p>DeepSeek 看图分析名称和相似种，不生成虚构置信度。建议结合 Pl@ntNet 核对。</p></div><button class="primary-btn" data-action="v2-ai-identify">使用 DeepSeek 看图</button></div>`;
  return s+extra;
 };
@@ -189,7 +191,7 @@ act=async function(action,el){
  return v2Orig.act(action,el);
 };
 
-async function v2refreshStatus(){const r=await v2status();const box=$('#v2-ai-status');if(box){box.textContent=r.offline?'需启动网站服务端':r.deepseek?'DeepSeek 已接通':'未配置 DeepSeek';box.className='v2-ai-state '+(r.deepseek?'ready':'')};toast(r.deepseek?'DeepSeek 服务已配置，可以尝试对话':'尚未检测到已配置的 DeepSeek 服务')}
+async function v2refreshStatus(){const r=await v2status();const ready=r.deepseek&&r.plantnet&&r.gbif;const box=$('#v2-ai-status');if(box){box.textContent=r.offline?'AI 后端暂未连接':ready?'三项服务已接通':`待配置：${[!r.plantnet&&'Pl@ntNet',!r.gbif&&'GBIF',!r.deepseek&&'DeepSeek'].filter(Boolean).join(' / ')}`;box.className='v2-ai-state '+(ready?'ready':'')};toast(ready?'Pl@ntNet、GBIF 与 DeepSeek 已接通':'部分服务尚未配置完成')}
 
 // 双保险：不更改老版本数据，任务清单随第一次保存自然升级到备份格式。
 const v2OriginalExport=exportData;
@@ -209,7 +211,7 @@ document.addEventListener('change',async e=>{if(e.target.id!=='v2-ai-image')retu
  catch(err){toast(err.message)}
 });
 // render 随状态变化时不自动联网。只有设置页主动检测状态。
-document.addEventListener('click',e=>{const button=e.target.closest('[data-nav="settings"]');if(button)setTimeout(()=>v2status().then(r=>{const box=$('#v2-ai-status');if(box){box.textContent=r.offline?'需启动网站服务端':r.deepseek?'DeepSeek 已接通':'未配置 DeepSeek';if(r.deepseek)box.classList.add('ready')}}),0)},true);
+document.addEventListener('click',e=>{const button=e.target.closest('[data-nav="settings"]');if(button)setTimeout(()=>v2status().then(r=>{const box=$('#v2-ai-status'),ready=r.deepseek&&r.plantnet&&r.gbif;if(box){box.textContent=r.offline?'AI 后端暂未连接':ready?'三项服务已接通':'服务待配置';if(ready)box.classList.add('ready')}}),0)},true);
 
 // 优先走服务端的 Pl@ntNet 代理。个人旧版浏览器密钥继续兼容。
 identify=async function(){

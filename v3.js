@@ -30,10 +30,10 @@ function v3UpdateWeatherViews(){
 async function v3FetchWeather(lat,lon,city){
  const url=new URL('https://api.open-meteo.com/v1/forecast');
  url.searchParams.set('latitude',Number(lat).toFixed(3));url.searchParams.set('longitude',Number(lon).toFixed(3));
- url.searchParams.set('current','temperature_2m,relative_humidity_2m,weather_code');url.searchParams.set('timezone','auto');
+ url.searchParams.set('current','temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,wind_direction_10m');url.searchParams.set('timezone','auto');
  const r=await fetch(url.toString());if(!r.ok)throw Error('天气服务暂时不可用');const data=await r.json();
  const current=data.current||{};if(!Number.isFinite(+current.temperature_2m)||!Number.isFinite(+current.relative_humidity_2m))throw Error('天气服务未返回有效温湿度');
- v3Weather={city:city||'当前位置',temperature:Number(current.temperature_2m),humidity:Number(current.relative_humidity_2m),code:Number(current.weather_code),at:new Date().toISOString(),source:'Open-Meteo',locationMethod:city?'城市检索':'手机定位'};
+ v3Weather={city:city||'当前位置',temperature:Number(current.temperature_2m),humidity:Number(current.relative_humidity_2m),code:Number(current.weather_code),windSpeed:Number(current.wind_speed_10m),windDirection:Number(current.wind_direction_10m),at:new Date().toISOString(),source:'Open-Meteo',locationMethod:city?'城市检索':'手机定位'};
  try{localStorage.setItem(V3_WEATHER_KEY,JSON.stringify(v3Weather))}catch{}
  v3UpdateWeatherViews();return v3Weather;
 }

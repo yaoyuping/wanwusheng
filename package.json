@@ -1,0 +1,10 @@
+{
+  "name": "yiyu-plants",
+  "version": "4.5.2",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node --check app.js && node --check upgrade.js && node --check v3.js && node --check v4.js && node --check config.js && node --test"
+  },
+  "engines": { "node": ">=20" }
+}
