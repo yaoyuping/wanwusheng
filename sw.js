@@ -1,5 +1,5 @@
-const CACHE='yiyu-plants-v4.5.2-gh-pages';
-const ASSETS=['./','./index.html','./styles.css','./upgrade.css','./v3.css','./v4.css?v=4.5.2','./config.js?v=4.5.2','./app.js','./upgrade.js','./v3.js','./v4.js?v=4.5.2','./manifest.webmanifest','./icon.svg','./icon-180.png','./icon-192.png','./icon-512.png'];
+const CACHE='wanwusheng-v5.3.0';
+const ASSETS=['./','./index.html','./styles.css','./upgrade.css','./v3.css','./v4.css?v=4.5','./backup.css?v=4.5.1','./backup.js?v=4.5.1','./app.js','./upgrade.js','./v3.js','./v4.js?v=4.5','./ai-v452.css?v=4.5.2','./ai-v452.js?v=4.5.2','./v453.css?v=4.5.3','./v453.js?v=4.5.3','./v46.css?v=4.6.0','./v46.js?v=4.6.0','./v47.css?v=4.7.0','./v47.js?v=4.7.0','./v48.css?v=4.8.0','./v48.js?v=4.8.0','./v49.css?v=4.9.0','./v49.js?v=4.9.0','./v50.css?v=5.0.0','./v50.js?v=5.0.0','./v51.css?v=5.1.0','./v51.js?v=5.1.0','./v52.css?v=5.2.0','./v52.js?v=5.2.0','./v53.css?v=5.3.0','./v53.js?v=5.3.0','./manifest.webmanifest','./icon.svg','./icon-180.png','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',e=>{

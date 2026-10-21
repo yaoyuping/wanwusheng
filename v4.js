@@ -169,7 +169,7 @@ settingsView=function(){return `<section class="v4-location-settings"><strong>�
 renderNav=function(){const current=ui.tab;$('#desktop-nav').innerHTML=[...tabs,['settings','设置与备份','settings']].map(([k,t,i])=>`<button data-nav="${k}" class="nav-btn ${k===current?'active':''}">${ico(i)}<span>${t}</span></button>`).join('');const mobile=[['home','首页','home'],['atlas','图鉴','book'],['recognize','识别','camera'],['plants','一隅','plant'],['settings','我的','settings']];$('#mobile-nav').innerHTML=mobile.map(([k,t,i])=>`<button data-nav="${k}" class="${k===current?'active':''}" aria-label="${t}">${ico(i,23)}<span>${t}</span></button>`).join('')};
 
 const v4BeforeRecognize=recognizeView;
-recognizeView=function(){return `<section class="v4-recognition-modes" aria-label="识别与诊断模式"><div class="v4-mode-heading"><span>CAMERA ASSISTANT</span><strong>先选择你想解决的问题</strong></div><div class="v4-mode-buttons"><button class="selected" data-nav="recognize"><i></i>植物识别</button><button data-action="v4-pests"><i></i>病虫害诊断</button><button data-action="v4-guide"><i></i>它该怎么养</button></div><p>植物识别由安全后端连接 Pl@ntNet 并用 GBIF 核对学名；只有点击识别后才上传照片。</p></section>`+v4BeforeRecognize()};
+recognizeView=function(){return `<section class="v4-recognition-modes" aria-label="识别与诊断模式"><div class="v4-mode-heading"><span>CAMERA ASSISTANT</span><strong>先选择你想解决的问题</strong></div><div class="v4-mode-buttons"><button class="selected" data-nav="recognize"><i></i>植物识别</button><button data-action="v4-pests"><i></i>病虫害诊断</button><button data-action="v4-guide"><i></i>它该怎么养</button></div><p>植物识别使用你自行配置的 Pl@ntNet；病虫害与养护入口提供本地速查，不会上传照片。</p></section>`+v4BeforeRecognize()};
 
 ui.v4PlantLayout=ui.v4PlantLayout||'grid';
 const v4BeforePlants=plantsView;

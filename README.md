@@ -1,59 +1,71 @@
-# 一隅 · 植物手记 v4.5.2
+# 一隅 · 植物手记 v4.5.2 —— 植物数据库与 DeepSeek 接入说明
 
-个人植物档案、养护时间轴、日历、野外植物图鉴与定位天气。仅包含静态网站代码和图标，**不附带私人照片、植物档案或 API 密钥**。
+## 这次新增了什么
 
-## 本版更新
+- **Pl@ntNet 拍照识别**：选择植物照片、发送到你自己的 API 后端，返回候选物种、中文俗名（如服务有收录）、拉丁学名和匹配分数，可收进「我的植物」或「野外发现」。结果不是最终鉴定。
+- **GBIF 物种数据库检索**：「图鉴 → 全球物种学名检索」，优先建议使用拉丁名，例如 `Ginkgo biloba`、`Monstera deliciosa`。展示科属、分类状态、学名和可核验的 GBIF 来源链接。中文俗名可能检索不到；GBIF 并不提供完整的家庭养护手册。
+- **DeepSeek 看图、养护、病虫害辅助分析**：在「拍照识别」或已有植物档案中的 AI 按钮使用，基于你明确提交的照片、档案与部分养护记录回答。图片、笔记仅在你点击开始分析时发送，**不自动同步数据库**。
+- **AI 六章节植物百科草稿**：在 GBIF 物种详情页点击「AI 六章节简介」，可生成形态、分布、栽培、价值、文化和近种区别的参考文稿；AI 内容应与植物志、权威分类学资料核验，不自动写入档案。
+- 保留 v4.5.1 的本地 IndexedDB、养护日历、天气/定位、标签、数据保险箱与 iCloud Drive 手动备份。AI API Key 不会进入导出的 JSON 备份。
 
-- 首页与手机操作：新增问候与收藏统计、四个高频入口、养护提醒角标，以及手机端横向植物卡片；底栏调整为「首页 / 图鉴 / 识别 / 一隅 / 我的」。
-- 天气与图标：天气并入薄荷绿问候区，集中展示地点、室外温度、湿度和风况；晴、云、雨、雪等天气状态及功能入口统一使用轻盈的线性 SVG 图标。
-- 安全 AI 后端：新增 Vercel Functions；Pl@ntNet 用于候选识别，GBIF 核对学名，DeepSeek 用于养护问答、植物识别与照片分析。所有密钥只从服务端环境变量读取。
-- 图鉴与识别：植物百科详情可直接添加为家养植物；识别页增加「植物识别 / 病虫害诊断 / 它该怎么养」三种入口，后两项为不上传照片的本地速查。
-- 我的一隅：植物收藏支持网格/列表切换；设置页增加本机档案概览。商业会员、商城和社交分享功能没有引入。
-- 天气位置：可以使用手机 GPS 自动定位后反向解析省市名称，也可以一键固定为「浙江省 · 杭州市」，或搜索选择其他城市。选择固定城市后，在后续打开时不再自动改用设备位置。
-- 发现定位：在「新发现·野外植物」点「使用手机定位」，获取当前坐标、定位精度和反向解析的地点名称。地址解析失败时仍保留当次坐标，并可以手动编辑地名；保存后可打开地图查看。**不能通过 IP 或 GitHub Pages 静默获知准确位置**。
-- 植物新增/编辑：位置、浇水检查间隔、购买渠道、光照、健康状态改为选择器；现有档案里不属于预设选项的值也可以保留显示，避免旧数据丢失。
-- 自定义标签：按「添加标签」或按 Enter 新增标签，点击标签「×」移除，已使用过的标签在其他植物中可复用；标签及标签库随 JSON 备份导出。
-- 浇水检查间隔：1/2/5/7/10/15 天。用户原始清单中「2 天」重复，发布时去重。
+## 交付文件
 
-## GitHub Pages 部署
+1. **一隅植物手记-v4.5.2-GitHub-Pages前端.zip**：放在 GitHub Pages 仓库根目录（覆盖原代码前请备份）。只是前端，不包含 API Key。
+2. **一隅植物手记-v4.5.2-Vercel后端.zip**：单独部署 Vercel 项目，仅托管 API。包含 `/api/status`、`/api/species`、`/api/identify`、`/api/ai` 四个端点。
+3. **一隅植物手记-v4.5.2-Vercel一体版.zip**：可以直接部署到同一个 Vercel 项目，省去跨域设置。如果决定继续使用 GitHub Pages，推荐前两项。
+4. **一隅植物手记-v4.5.2-离线界面体验.html**：离线体验界面和已有本地功能，但图片识别、数据库联网检索、DeepSeek 无法在无后端/无密钥时调用。
 
-1. 在 GitHub 创建公共仓库 `yiyu-plants`；
-2. **解压 ZIP** 后，将 `index.html`, `app.js`, `upgrade.js`, `v3.js`, `v4.js`, `styles.css` 和图标等全部文件放入仓库根目录；不要把整个 ZIP 直接当成网站内容；
-3. Settings → Pages → Build and deployment → Deploy from a branch → `main` / `/(root)` → Save；
-4. 等待部署后，用 iPhone Safari 打开 `https://<账号>.github.io/yiyu-plants/`，允许系统和 Safari 的位置访问权限；
-5. 如果设备已有 v3 档案且网站域名和路径未变，它会继续读取该浏览器原有的 IndexedDB 数据。升级前仍建议先在原网站**设置→导出 JSON 备份**。
+## 部署方式 A：GitHub Pages + Vercel（保留原网站网址）
 
-## Vercel AI 后端
+1. **先到旧版网页「我的 → 数据保险箱」导出一次完整 JSON。** 保存在 iCloud Drive。确认备份里包含照片及待办。
+2. 将 GitHub Pages 前端 ZIP **解压后的内容** 上传/覆盖到 GitHub 仓库根目录；检查 `index.html` 在根目录。GitHub Pages 从 `main` + `/ (root)` 部署即可。
+3. 创建 Vercel 项目，上传/关联 **Vercel 后端 ZIP** 里的目录。给项目设置以下 Environment Variables：
 
-同一仓库包含 `api/` 下的 Vercel Functions。将仓库连接到 Vercel 后，配置以下环境变量并重新部署：
+   | 变量名 | 来源 / 含义 |
+   | --- | --- |
+   | `DEEPSEEK_API_KEY` | 从 https://platform.deepseek.com 获取；DeepSeek API 按用量计费。 |
+   | `PLANTNET_API_KEY` | 从 https://my.plantnet.org 获取；有套餐/配额限制。 |
+   | `APP_PASSWORD` | 自行生成 **至少 12 位** 的随机字符串。不能与任何 API Key 相同。 |
+   | `ALLOWED_ORIGINS` | `https://yaoyuping.github.io`；请替换成你的实际 GitHub Pages 来源地址，不含仓库路径和末尾斜杠。自定义域名需改成对应 origin。多个来源用英文逗号分隔。 |
 
-- `PLANTNET_API_KEY`：Pl@ntNet 私有 API Key；
-- `DEEPSEEK_API_KEY`：DeepSeek API Key；
-- `APP_PASSWORD`：一隅网站访问 AI 服务时使用的个人口令，建议使用随机长密码；
-- `ALLOWED_ORIGINS`：可选，逗号分隔的额外网页来源；默认已允许 `https://yaoyuping.github.io`；
-- `DEEPSEEK_TEXT_MODEL`：可选，默认 `deepseek-chat`；
-- `DEEPSEEK_VISION_MODEL`：可选，默认 `deepseek-flash`。
+4. 在 Vercel 保存设置并重新部署，获取类似 `https://xxxx.vercel.app` 的实际地址。
+5. 在 GitHub Pages 正式网站进入「我的 → AI 服务连接」，输入 Vercel 后端地址和刚设置的 `APP_PASSWORD`，点击「保存服务配置 → 检查接口状态」。
+6. API Key **只放在 Vercel 项目环境变量**；绝不填写在 GitHub Pages 源码、网页输入框、公开 GitHub 仓库或聊天消息里。
 
-`config.js` 只保存公开的后端网址，不包含任何 API Key。若 Vercel 实际生产域名不是 `https://yiyu-plants-api.vercel.app`，请在发布 GitHub Pages 前修改该文件中的网址。
+## 部署方式 B：直接使用 Vercel 一体版
 
-可用接口：`GET /api/status`、`GET /api/gbif?name=...`、`POST /api/identify`、`POST /api/ai`。AI 和识别接口支持来源校验、可选访问口令、上传大小限制、超时及基础频率限制。
+1. 把一体版的内容直接部署在一个 Vercel 项目。
+2. 配置 `DEEPSEEK_API_KEY`、`PLANTNET_API_KEY`、`APP_PASSWORD`。`ALLOWED_ORIGINS` 可以留空（同源访问），也可以填实际网站 origin。
+3. 网页「我的 → AI 服务连接」的 **后端地址保持空白**（自动连接本站）并填写访问口令。
+4. 但请注意，**浏览器本地数据按站点域名隔离**：换到 Vercel 新网址后，必须从原网站先导出 JSON，再在新网址导入。两处数据不会自动同步。
 
-## 天气与定位的重要限制
+## 隐私与安全
 
-- 天气提供的是**室外温度与相对湿度**，而非客厅、卧室实际湿度。天气来源 Open-Meteo。
-- GPS 定位必须在 HTTPS 安全上下文、真实手机浏览器中获得定位权限。浏览器拒绝、系统关闭定位、仅有低精度信号或第三方地图接口无法访问时，无法保证定位成功或名称完全准确。
-- 经用户允许获取实时 GPS 后，使用 OpenStreetMap Nominatim 或 BigDataCloud API 反查行政区与地点。反查失败只存坐标并提示手填，**绝不把 IP 推断地址冒充 GPS**。
-- 当你想让天气一直固定为杭州，在天气区点「切换地点 → 固定到浙江省·杭州市」。野外发现不会套用这个固定天气城市，而是要求当次单独 GPS 定位。
-- 野外发现经纬度保存在当前设备及导出的个人 JSON 文件中。只有主动打开外部地图时才会向地图服务发送相应坐标。
-- 如果 Google/Apple 地图不能使用，仍可点击网站内的 OpenStreetMap 地图入口。
+- 本地植物档案仍存在该浏览器 IndexedDB 中；没有注册账号，也没有引入 Supabase / CloudKit / 自动云同步。
+- Pl@ntNet 图片识别会将这张照片发送给 Pl@ntNet；DeepSeek 看图、养护或百科分析会发送用户主动选择提交的图片/问题/必要的植物资料。**不要上传含私人住址或其他敏感内容的照片**。
+- API 请求口令暂存 `sessionStorage`；关闭标签页通常会失效。API 后端地址保存在本机 `localStorage`。所有密钥都必须保留在服务端。
+- **APP_PASSWORD 是轻量单用户保护，不等于完整用户身份认证或可验证的访问审计**。建议使用难猜的长口令、服务端配额和 Vercel 成本告警，不要将口令分享给他人。
+- 目前后端未引入持久化限流数据库，不适合开放为公用 AI 服务。密钥用量和账单请在服务商控制台检查。
+- GPS、天气、野外发现数据仍随本地 JSON 备份保存；备份中可能含精确位置，严禁上传到公开 GitHub 仓库。
 
-## 数据与隐私
+## 重要限制
 
-- 网站 **没有用户账户和云同步**。档案、照片、养护历史等存于当前浏览器 IndexedDB，切换浏览器、手机或网站网址时不会自动迁移；请定期导出备份。
-- GitHub Pages 仓库内不包含任何私有植物照片或位置。不要把个人 JSON 备份或 DeepSeek API Key 上传到公共仓库。
-- GitHub Pages 不直接运行服务端；v4.5.2 会调用独立的 Vercel Functions。不要将 API Key 写到网页文件、Git 提交或个人 JSON 备份中。
-- GitHub Pages 发布页面属于公开可访问的网页，即使加了 `noindex` 也不能作为访问控制手段。
+- 目前仅做了**模拟的 API 调用单元测试和 JS 语法检查**，没有真实 DeepSeek、Pl@ntNet 计费请求；需要你的 API Key 与已上线 HTTPS 地址才能做端到端调试。
+- 浏览器自动化环境阻止本地网页导航，未完成真实 iPhone 上拍照识别、跨站 CORS、照片传输的完整验证。
+- GBIF 分类学名录不会给出类似植物志的完整六章内容；点击 AI 按钮生成的文字是机器生成的草稿，不能视为权威百科。
+- GitHub Pages 不能运行 API 服务端，所以仅上传 GitHub Pages 前端包**无法直接使用联网识别**。
+- **图片识别并不保证正确**。相似种、园艺品种和病虫害仅凭照片可能无法鉴定；核实实物、产地或请专业人士检查。
 
-## 文件列表
+## 服务接口（供开发和排查）
 
-前端包含 `index.html`、`config.js`、`app.js`、`upgrade.js`、`v3.js`、`v4.js`、样式表、Service Worker、Web App Manifest 和图标。后端包含 `api/`、`lib/`、`vercel.json` 与无密钥的测试文件。
+- `GET /api/status`：返回是否已配置服务，**不返回 Key**。
+- `POST /api/species`：body `{"query":"Ginkgo biloba"}`；GBIF 分类学名录检索。
+- `POST /api/identify`：body `{"image":"data:image/jpeg;base64,..."}`；Pl@ntNet 候选识别。
+- `POST /api/ai`：body `{"mode":"care|diagnose|identify|species","plant":{},"question":"...","image":"data:image/jpeg;base64,..."}`；DeepSeek 分析。
+- `POST` 请求都须带 `X-Yiyu-Password` header，后端校验 `APP_PASSWORD`。静态前端必须从 `ALLOWED_ORIGINS` 中允许的站点访问。
+
+资料来源：
+- DeepSeek 图像输入：https://api-docs.deepseek.com/guides/vision/
+- Pl@ntNet 官方单物种识别：https://my.plantnet.org/doc/api/identify
+- GBIF Species API：https://techdocs.gbif.org/en/openapi/v1/species
+- Vercel 环境变量：https://vercel.com/docs/environment-variables

@@ -1,0 +1,26 @@
+/* v4.5.2: soft mint design, harmonious with the existing botanical journal */
+.yiyu-ai-settings,.yiyu-species-panel,.yiyu-identify-info{border-radius:24px!important;margin:20px 0 26px!important;border:1px solid #e0eae4!important;background:linear-gradient(150deg,#fff,#f5fbf7)!important;box-shadow:0 10px 32px rgba(31,80,59,.045)}
+.yiyu-ai-topline,.yiyu-species-head{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:17px}
+.yiyu-ai-topline h2,.yiyu-species-head h2{font-weight:700;margin:4px 0 6px;color:#1f4438;letter-spacing:.02em}
+.yiyu-ai-topline p,.yiyu-species-head p,.yiyu-identify-info p{color:#697f75;line-height:1.7;margin:0;font-size:13px}
+.yiyu-ai-kicker{font-size:10px;color:#168469;font-weight:700;letter-spacing:2px}
+.yiyu-ai-orb{font-size:38px;color:#0c8c6c;padding:7px 16px;border-radius:21px;background:#e2f4eb}
+.yiyu-species-decoration{font-size:46px;color:#71ae91}
+.yiyu-ai-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+.yiyu-ai-fields input,.yiyu-species-form input{width:100%;font-size:14px;border:1px solid #dce7e0;border-radius:13px;padding:12px 13px;background:#fff;color:#243e35;box-sizing:border-box}
+.yiyu-ai-fields label span{display:block;margin-bottom:7px;font-size:12px;color:#476b5b}
+.yiyu-ai-actions,.yiyu-identify-actions{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+.yiyu-api-status{border-radius:13px;padding:12px 14px;background:#e8f4ed;color:#1b6651;font-size:13px;margin:16px 0}
+.yiyu-ai-notice,.yiyu-species-credit,.yiyu-species-tip{font-size:12px!important;line-height:1.8;color:#7c8b83;margin:14px 0 0}
+.yiyu-species-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;margin:18px 0}
+.yiyu-species-results{display:grid;gap:11px;margin-top:18px}
+.yiyu-species-item{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px;border:1px solid #e3ebe4;border-radius:17px;background:#fff}
+.yiyu-species-item b{font-size:15px;color:#214638;display:block}.yiyu-species-item small{font-size:11px;color:#63836d;display:block;margin-top:5px}.yiyu-taxonomy{display:block;color:#8b938d;font-size:12px;margin-top:4px}
+.yiyu-species-buttons{display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap}.yiyu-api-error{color:#ba5236;font-size:13px}
+.yiyu-identify-info{padding:20px!important}.yiyu-identify-info h3{color:#215646}
+.yiyu-taxonomy-detail h2{color:#174734;font-size:25px;margin:12px 0}.yiyu-taxonomy-detail p{color:#69756d;line-height:1.8}.yiyu-tag{font-size:11px;letter-spacing:2px;color:#168263}
+.yiyu-taxonomy-detail dl{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin:20px 0}.yiyu-taxonomy-detail dl>div{padding:14px;border-radius:12px;background:#f4f8f5}.yiyu-taxonomy-detail dt{font-size:12px;color:#718678}.yiyu-taxonomy-detail dd{margin:6px 0 0;font-size:14px;font-weight:600;color:#22503b}
+.recognize-info{display:none!important}
+@media(max-width:700px){.yiyu-ai-fields{grid-template-columns:1fr}.yiyu-ai-topline h2,.yiyu-species-head h2{font-size:20px}.yiyu-species-item{align-items:flex-start;flex-direction:column}.yiyu-species-buttons{width:100%}.yiyu-species-item button{flex:1}.yiyu-taxonomy-detail dl{grid-template-columns:1fr 1fr}.yiyu-ai-topline,.yiyu-species-head{align-items:flex-start}}
+
+.yiyu-generated-copy{padding:18px;margin-top:12px;border-radius:16px;background:#f2f8f3;color:#315d4c;line-height:1.9;font-size:14px;white-space:normal}

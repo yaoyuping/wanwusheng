@@ -1,0 +1,34 @@
+/* 万物生 v5.3 · 与 Pl@ntNet 入口一致的 DeepSeek 页面内面板。 */
+.v53-deepseek-panel{margin-top:18px;padding:22px;border:1px solid #e5eadf;border-radius:27px;background:#fffefa;box-shadow:0 14px 35px rgba(30,75,48,.045)}
+.v53-deepseek-panel[hidden]{display:none!important}
+.v53-panel-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;margin:0 0 20px}
+.v53-panel-top span{font-size:10px;font-weight:750;letter-spacing:.13em;color:#759782}
+.v53-panel-top h2{margin:7px 0 0;font:600 25px/1.42 "Songti SC","STSong","Noto Serif CJK SC",serif;color:#294a35}
+.v53-engine-selected{outline:2px solid rgba(46,108,75,.24);box-shadow:0 12px 28px rgba(29,85,50,.09)!important}
+.v53-ai-body{display:grid;grid-template-columns:1fr 1fr;gap:17px;align-items:stretch}
+.v53-ai-photo,.v53-ai-question{padding:20px;border-radius:23px;background:#f5f8f2;min-width:0}
+.v53-ai-question{background:#f8f8f3}
+.v53-step{display:flex;align-items:center;justify-content:space-between;gap:9px;color:#32664a;font-size:14px;font-weight:750;margin-bottom:16px}
+.v53-step small{color:#92a397;font-size:11px;font-weight:400;text-align:right}
+.v53-ai-photo-frame{height:288px;border-radius:22px;overflow:hidden;background:linear-gradient(132deg,#e2f0e4,#eaf0df);display:grid;place-items:center;text-align:center}
+.v53-ai-photo-frame img{display:block;width:100%;height:100%;object-fit:contain}
+.v53-photo-placeholder{display:flex;align-items:center;flex-direction:column;gap:11px;color:#316847;padding:16px}
+.v53-photo-placeholder strong{font:600 23px/1.6 "Songti SC","STSong","Noto Serif CJK SC",serif;color:#28553d}
+.v53-photo-placeholder small{font-size:12px;color:#91a395}
+.v53-photo-icon{width:72px;height:72px;border-radius:50%;background:#fffcf8;display:grid;place-items:center}
+.v53-ai-photo-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:15px}
+.v53-upload-label{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:43px;padding:10px 16px!important;cursor:pointer}
+#v53-deepseek-panel #v2-ai-image{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;clip-path:inset(50%)}
+.v53-file-name{font-size:12px;color:#8b9e92;max-width:190px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.v53-suggestions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:17px}
+.v53-suggestions button{font-size:12px;line-height:1.4;border-radius:18px;padding:8px 12px;background:#fffefa;border:1px solid #dce9de;color:#3d7556;cursor:pointer}
+.v53-suggestions button:hover{background:#e7f2e8}
+.v53-question-label{display:block;font-size:13px;font-weight:750;margin:5px 0 9px;color:#46614f}
+#v53-deepseek-panel #v2-ai-question{box-sizing:border-box;width:100%;min-height:132px;border-radius:17px;border:1px solid #dce7da;background:#fffefa;font:inherit;font-size:14px;line-height:1.7;color:#2a4834;padding:14px 15px;resize:vertical}
+#v53-deepseek-panel #v2-ai-question:focus{outline:2px solid #96bca4;outline-offset:1px}
+.v53-ai-note{font-size:12px;line-height:1.7;color:#879b8b;margin:14px 0 15px}
+.v53-run-btn{width:100%;min-height:45px;display:flex;justify-content:center;align-items:center;gap:9px}
+.v53-ai-result:not(:empty){margin-top:18px;padding:17px 19px;background:#f6faf6;border-radius:19px;border:1px solid #e5ecdf}
+.v53-ai-result .v2-ai-answer{margin:0}
+@media(max-width:780px){.v53-ai-body{grid-template-columns:1fr}.v53-ai-photo-frame{height:240px}.v53-ai-question{padding:17px}}
+@media(max-width:620px){.v53-deepseek-panel{padding:13px;border-radius:21px;margin-top:12px}.v53-panel-top{margin:2px 3px 14px}.v53-panel-top h2{font-size:19px}.v53-ai-photo,.v53-ai-question{padding:15px;border-radius:18px}.v53-ai-photo-frame{height:225px}.v53-step small{font-size:10px}.v53-photo-placeholder strong{font-size:20px}}

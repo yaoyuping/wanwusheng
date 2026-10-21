@@ -1,0 +1,18 @@
+/* 万物生 v5.2 · 识别两种引擎各走一条流程。 */
+.topbar .top-add[hidden]{display:none!important}
+.v52-plantnet-panel{margin:18px 0 0;padding:20px;border-radius:24px;background:#fffefa;border:1px solid #e7eee4;box-shadow:0 15px 32px rgba(41,76,51,.045)}
+.v52-plantnet-panel[hidden]{display:none!important}
+.v52-panel-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+.v52-panel-heading span{font-size:10px;letter-spacing:.15em;color:#779b82;font-weight:750}
+.v52-panel-heading h2{font:600 24px/1.45 "Songti SC","STSong","Noto Serif CJK SC",serif;letter-spacing:.015em;color:#34563f;margin:6px 0 0}
+.v52-fold-btn{background:transparent;border:1px solid #dce9db;border-radius:999px;color:#49745a;padding:9px 13px;white-space:nowrap;font-size:12px;cursor:pointer}
+.v52-fold-btn:hover{background:#eff6ed}.v52-engine-selected{outline:2px solid rgba(47,118,78,.22);outline-offset:0;box-shadow:0 10px 25px rgba(28,81,50,.08)!important}
+.v52-engine-selected .v52-toggle-arrow{transform:rotate(90deg)}
+.v52-plantnet-panel .v50-recognition-work{margin:0}
+.v52-plantnet-panel .v47-main-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:14px}
+.v52-plantnet-panel .v47-main-actions>button{flex:1 1 190px;justify-content:center;min-height:48px}
+.v52-identify-run{font-size:13px!important;line-height:1.4!important;display:flex;gap:8px;align-items:center}
+.v52-plantnet-panel .v50-result-head{margin-top:26px!important}
+.v52-plantnet-panel .v50-recognition-empty{margin-top:19px!important}
+@media(max-width:620px){.v52-plantnet-panel{margin-top:12px;padding:12px;border-radius:20px}.v52-panel-heading{padding:3px 3px 0}.v52-panel-heading h2{font-size:18px}.v52-fold-btn{padding:7px 10px}.v52-plantnet-panel .v47-main-actions>button{flex-basis:100%}}
+@media(prefers-reduced-motion:reduce){.v52-engine-selected .v52-toggle-arrow{transition:none}}

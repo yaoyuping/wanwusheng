@@ -1,0 +1,17 @@
+/* 万物生 5.1 · 克制的识别方式双入口与三处一致天气 */
+.topbar .top-add{display:none!important}
+.topbar .top-add[data-v51-visible="1"]{display:inline-flex!important}
+.topbar .top-add[hidden]{display:none!important}
+.v51-plants-weather{margin:0 0 24px}.v51-plants-weather .v50-weather{margin:0}
+.v51-engine-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin:4px 0 21px}
+.v51-engine{display:flex;gap:13px;align-items:center;text-align:left;min-height:84px;padding:16px 19px;border-radius:20px;border:1px solid #dfe8dc;background:#fffefa;color:#315c47;cursor:pointer;box-shadow:0 7px 20px rgba(31,65,42,.045);transition:transform .2s,box-shadow .2s,background .2s}
+.v51-engine>span{display:flex;flex-direction:column;gap:5px;flex:1;min-width:0}.v51-engine strong{font-size:15px;font-weight:750;color:inherit}.v51-engine small{font-size:11px;color:#829887}.v51-engine>svg:last-child{opacity:.65;flex-shrink:0}
+.v51-engine-primary{background:#e9f1e6;border-color:#d7e5d6}.v51-engine-primary>svg:first-child{color:#2b7356}
+.v51-engine-secondary{background:#f7f4ec;border-color:#ebe8d9}.v51-engine-secondary>svg:first-child{color:#947e59}
+.v51-engine:hover{transform:translateY(-2px);box-shadow:0 12px 27px rgba(31,65,42,.10)}.v51-engine:active{transform:scale(.985)}
+.v51-identify-status{display:block;line-height:1.65}
+.v51-ai-plant-select{display:flex;flex-direction:column;gap:7px;margin:0 0 12px}.v51-ai-plant-select label{font-size:12px;font-weight:750;color:#496c53}.v51-ai-plant-select select{appearance:auto;width:100%;min-height:45px;background:#fafbf6;border:1px solid #d9e4d8;border-radius:13px;padding:10px 14px;color:#355b44;font-size:13px}
+.v47-knowledge-link{display:none!important}
+@media(max-width:620px){.v51-engine-choices{gap:9px;margin-bottom:15px}.v51-engine{min-height:78px;padding:11px;gap:7px;border-radius:16px}.v51-engine>svg:first-child{width:21px;height:21px;flex-shrink:0}.v51-engine strong{font-size:12px}.v51-engine small{font-size:10px;line-height:1.4}.v51-engine>svg:last-child{display:none}.v51-plants-weather{margin-bottom:16px}}
+@media(max-width:355px){.v51-engine-choices{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.v51-engine{transition:none}}

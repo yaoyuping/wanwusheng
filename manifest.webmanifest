@@ -1,10 +1,10 @@
 {
-  "name": "一隅 · 私人植物手记",
-  "short_name": "一隅植物",
+  "name": "万物生 · 植物篇",
+  "short_name": "万物生",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#f6faf6",
-  "theme_color": "#eff8f2",
+  "background_color": "#f7f7f1",
+  "theme_color": "#28523f",
   "icons": [
     {
       "src": "icon-192.png",
