@@ -43,6 +43,8 @@ try {
     await assertPage('plant');
     await page.locator('[data-action="edit-plant"]').first().click();
     await page.locator('#plant-form [name="name"]').fill('更新的银杏');
+    await page.evaluate(() => render());
+    assert.equal(await page.locator('#plant-form [name="name"]').inputValue(), '更新的银杏', 'Background redraws preserve an open editor and unsaved input');
     await page.locator('#plant-form [type="submit"]').click();
     await page.waitForFunction(() => document.querySelector('.v3-detail-cover-bottom h2')?.textContent === '更新的银杏');
     await assertPage('plant');

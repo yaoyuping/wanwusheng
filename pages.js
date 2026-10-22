@@ -56,7 +56,9 @@
       // Run the normal cleanup paths, including disposing the overview map.
       baseRender();
     }
-    current = route; closeModal(); mode(true);
+    current = route;
+    if (!painting) closeModal();
+    mode(true);
     const label = route.kind === 'plant' ? '我的植物' : route.kind === 'record' ? '发现档案' : '植物百科';
     const backLabel = route.kind === 'guide' ? '返回发现档案' : '返回';
     document.getElementById('app').innerHTML = `<article class="detail-page detail-page-${route.kind}"><header class="detail-page-header"><button type="button" class="detail-page-back" data-action="page-back" aria-label="${backLabel}">${ico('back', 21)}<span>${backLabel}</span></button><h1>${label}</h1><span class="detail-page-header-spacer" aria-hidden="true"></span></header>${body}</article>`;
