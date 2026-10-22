@@ -86,8 +86,8 @@ function sightingPhotos(record) {
   }
 
   function groupCard(group) {
-    const first = group.first, cover = group.records.flatMap(sightingPhotos)[0] || '', namedPlaces = places(group.records).filter(place => place.name !== '未记录地点');
-    return `<button class="atlas-card v56-group-card" type="button" data-action="sighting-detail" data-id="${esc(first.id)}"><div class="card-photo">${imgTag(cover, first.name)}<span class="v56-count-badge">${group.records.length} 次发现</span></div><h3>${esc(first.name)}</h3><p class="latin">${esc(group.latin || '学名待核实')}</p><div class="atlas-caption">${ico('pin', 13)} ${esc(namedPlaces.slice(0, 2).map(place => place.name).join(' · ') || '地点待记录')}${namedPlaces.length > 2 ? ` 等 ${namedPlaces.length} 处` : ''}</div></button>`;
+    const first = group.first, cover = group.records.flatMap(sightingPhotos)[0] || '';
+    return `<button class="atlas-card v56-group-card" type="button" data-action="sighting-detail" data-id="${esc(first.id)}"><div class="card-photo">${imgTag(cover, first.name)}<span class="v56-count-badge">${group.records.length} 次发现</span><div class="v571-card-caption"><h3>${esc(first.name)}</h3>${group.latin ? `<p class="latin">${esc(group.latin)}</p>` : ''}</div></div></button>`;
   }
 
   function matchedGroups() {
