@@ -34,6 +34,7 @@ try {
     await overview.locator('.v58-place-result').first().click();
     await page.locator('[data-action="v58-record-place"]').click();
     const form = page.locator('#sighting-form'), picker = form.locator('.v58-place-search');
+    assert.equal(await form.locator('.v56-map, .leaflet-container, iframe').count(), 0, 'Location forms contain no map');
     assert.equal(await form.locator('[name=location]').inputValue(), point.name);
     assert.equal(Number(await form.locator('[name=lat]').inputValue()), point.lat);
     await form.locator('[name=name]').fill('我的地图发现');
@@ -49,6 +50,7 @@ try {
     assert.equal(await page.locator('#v56-atlas-map .v56-pin').count(), 1);
     await page.locator('.v56-group-card').click();
     assert.equal(await page.locator('.v56-record-page .v56-map').count(), 0);
+    assert.equal(await page.locator('.v56-record-page a[href*="openstreetmap"], .v56-record-page iframe').count(), 0);
     await page.locator('[data-action="edit-sighting"]').click();
     assert.equal(Number(await form.locator('[name=lat]').inputValue()), point.lat);
     await form.locator('[name=location]').fill('接口故障');
@@ -65,14 +67,11 @@ try {
     await picker.locator('.v58-place-result').first().click();
     assert.equal(Number(await form.locator('[name=lon]').inputValue()), point.lon);
     await page.screenshot({ path: `/tmp/yiyu-v58-${width}-picker.png` });
-    const map = page.locator('#v58-picker-map');
-    await map.click({ position: { x: 90, y: 120 } });
-    const moved = Number(await form.locator('[name=lon]').inputValue());
-    assert.notEqual(moved, point.lon);
+    assert.equal(await form.locator('.v56-map, .leaflet-container, iframe').count(), 0);
     await form.locator('[type=submit]').click();
-    await page.waitForFunction(lon => state.sightings[0].lon === lon, moved);
+    await page.waitForFunction(() => !document.getElementById('sighting-form'));
     const data = await page.evaluate(async () => JSON.parse(await (await yiyuBuildFile()).file.text()));
-    assert.equal(data.sightings[0].lon, moved);
+    assert.equal(data.sightings[0].lon, point.lon);
     assert.equal(await page.evaluate(() => window.gpsCalls), initialGpsCalls, 'Place selection does not request GPS');
     await page.locator('.v56-group-card').click();
     await page.locator('[data-action="edit-sighting"]').click();
@@ -93,7 +92,7 @@ try {
     assert.equal(await form.locator('[name=location]').evaluate(input => input.readOnly), false);
     assert.deepEqual(errors, []);
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
-    console.log(`${width}px: search, persistence, edit, errors, Enter, map adjustment, backup, GPS success and denial passed (${queries.length} searches)`);
+    console.log(`${width}px: map only on overview, search, persistence, edit, errors, Enter, backup, GPS success and denial passed (${queries.length} searches)`);
     await context.close();
   }
 } finally { await browser.close(); }
