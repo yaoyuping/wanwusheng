@@ -45,7 +45,7 @@ try {
     assert.equal(await page.locator('.v56-record-page .v56-visit').count(), 2);
     assert.equal(await page.locator('.v56-record-page .v56-place-card').count(), 2);
     assert.equal(await page.locator('.v56-record-page .v56-map-section').count(), 0);
-    assert.equal(await page.locator('#v56-atlas-map .v56-pin').count(), 3);
+    assert.equal(await page.locator('#v56-atlas-map').count(), 0);
     assert.ok((await page.locator('.v56-record-page').innerText()).includes('第一次见到金黄的果实'));
     assert.equal(await page.locator('.v56-record-page .v54-guide').count(), 0);
     assert.equal(await page.locator('.v56-visit-note img').count(), 0);
@@ -74,8 +74,8 @@ try {
     await page.locator('#sighting-form [name="notes"]').fill('看到了树上的新果实。');
     await page.locator('#sighting-form [type="submit"]').click();
     await page.waitForFunction(() => state.sightings.length === 4);
-    assert.equal(await page.locator('.v56-group-card').count(), 2);
-    await page.locator('.v56-group-card').filter({ hasText: '无患子' }).click();
+    await page.waitForFunction(() => !document.getElementById('sighting-form'));
+    assert.equal(await page.locator('#modal-root').textContent(), '');
     assert.equal(await page.locator('.v56-record-page .v56-visit').count(), 3);
     assert.ok((await page.locator('.v56-record-page').innerText()).includes('看到了树上的新果实'));
     assert.deepEqual(errors, []);

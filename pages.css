@@ -1,0 +1,28 @@
+/* Detail views use normal document flow, without a backdrop or dialog. */
+.detail-page-open .topbar,.detail-page-open .site-footer,.detail-page-open .bottom-nav,.detail-page-open #v46-fab{display:none!important}
+.detail-page-open .page{padding-top:0!important;padding-bottom:0!important}
+.detail-page-open #app{max-width:960px;padding:0!important;outline:none}
+.detail-page{background:#fffefa;min-height:100dvh}
+.detail-page-header{position:sticky;top:0;z-index:25;display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:64px;padding:10px 22px;background:#fffefaf5;border-bottom:1px solid #e7ede4;backdrop-filter:blur(12px)}
+.detail-page-header h1{margin:0;font-size:18px;font-weight:750;letter-spacing:.05em}
+.detail-page-back{display:flex;align-items:center;gap:6px;min-height:44px;min-width:88px;padding:8px 0;border:0;background:transparent;color:#315d46;font-size:14px}
+.detail-page-header-spacer{width:88px;flex-shrink:0}
+.detail-page-back:focus-visible{outline:2px solid #39875c;outline-offset:3px;border-radius:6px}
+.detail-page .v3-detail-photo,.detail-page .v56-record-cover,.detail-page .v56-guide-cover{height:clamp(280px,35vw,440px)}
+.detail-page .v3-plant-tabs{top:65px}
+.detail-page .v3-plant-body{min-height:360px}
+.detail-page .v3-plant-overline{flex-wrap:wrap}
+.detail-page .v3-plant-foot{padding-bottom:max(14px,env(safe-area-inset-bottom));margin-top:16px}
+.detail-page .v56-record-actions{padding-bottom:max(14px,env(safe-area-inset-bottom))}
+.detail-page .v56-record-head h2{font-size:32px;overflow-wrap:anywhere}
+.detail-page .v56-visit-note{font-size:15px;line-height:1.9}
+@media(min-width:801px){.detail-page-open .page{padding-left:30px!important;padding-right:30px!important}.detail-page{border-left:1px solid #e7ede4;border-right:1px solid #e7ede4}}
+@media(max-width:800px){
+ .detail-page-open{padding-bottom:0!important}
+ .detail-page-open .page{padding:0!important}
+ .detail-page-header{padding:8px 17px;padding-top:max(8px,env(safe-area-inset-top));min-height:62px}
+ .detail-page .v3-plant-tabs{top:calc(61px + max(0px,env(safe-area-inset-top) - 8px))}
+ .detail-page .v3-detail-photo,.detail-page .v56-record-cover,.detail-page .v56-guide-cover{height:clamp(280px,76vw,410px)}
+ .detail-page .v56-record-head h2{font-size:29px}
+ .detail-page .v56-place-list{grid-template-columns:1fr}
+}

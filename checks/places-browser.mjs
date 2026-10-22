@@ -25,7 +25,7 @@ try {
     await page.goto(base);
     await page.waitForFunction(() => typeof state === 'object' && state !== null);
     const initialGpsCalls = await page.evaluate(() => window.gpsCalls);
-    await page.evaluate(() => { state.sightings = []; ui.tab = 'atlas'; render(); });
+    await page.evaluate(() => { state.sightings = []; go('atlas'); });
     const overview = page.locator('.v58-place-search[data-map="v56-atlas-map"]');
     assert.equal(await page.locator('#v56-atlas-map.leaflet-container').count(), 1, 'Map can be searched before the first sighting');
     await overview.locator('input').fill('杭州植物园');
@@ -47,7 +47,7 @@ try {
     await page.waitForFunction(() => state?.sightings?.length === 1);
     const stored = await page.evaluate(() => state.sightings[0]);
     assert.equal(stored.location, point.name); assert.equal(stored.lat, point.lat); assert.equal(stored.lon, point.lon);
-    await page.evaluate(() => { ui.tab = 'atlas'; render(); });
+    await page.evaluate(() => { go('atlas'); });
     assert.equal(await page.locator('#v56-atlas-map .v56-pin').count(), 1);
     await page.locator('.v56-group-card').click();
     assert.equal(await page.locator('.v56-record-page .v56-map').count(), 0);
@@ -74,6 +74,7 @@ try {
     const data = await page.evaluate(async () => JSON.parse(await (await yiyuBuildFile()).file.text()));
     assert.equal(data.sightings[0].lon, point.lon);
     assert.equal(await page.evaluate(() => window.gpsCalls), initialGpsCalls, 'Place selection does not request GPS');
+    await page.locator('[data-action="page-back"]').click();
     await page.locator('.v56-group-card').click();
     await page.locator('[data-action="edit-sighting"]').click();
     await page.route('https://nominatim.openstreetmap.org/reverse?*', route => route.fulfill({ json: { address: { state: '浙江省', city: '杭州市', suburb: 'GPS测试地点' } } }));

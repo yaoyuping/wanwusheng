@@ -37,7 +37,7 @@ try {
     await form.locator('[data-action="v4-tag-add"]').click();
     await form.locator('[type="submit"]').click();
     await page.waitForFunction(() => state.plants.some(p => p.name === '自定义测试一'));
-    await page.locator('#modal-root [data-action="close-modal"]').first().click();
+    await page.locator('[data-action="page-back"]').click();
     await page.locator('[data-action="new-plant"]:visible').first().click();
     assert.equal(await form.locator('select[name="interval"] option[value="13"]').count(), 1);
     assert.equal(await form.locator('select[name="location"] option[value="北窗书房"]').count(), 1);
@@ -48,19 +48,19 @@ try {
     await form.locator('[data-action="v4-tag-add"]').click();
     await form.locator('[type="submit"]').click();
     await page.waitForFunction(() => state.plants.some(p => p.name === '自定义测试二'));
-    await page.locator('#modal-root [data-action="close-modal"]').first().click();
+    await page.locator('[data-action="page-back"]').click();
     await page.reload();
     await page.waitForFunction(() => typeof state === 'object' && state?.plants?.length === 2);
     assert.equal(await page.evaluate(() => state.plants.find(p => p.name === '自定义测试一').price), '19.90');
     assert.equal(await page.evaluate(() => state.plants.find(p => p.name === '自定义测试二').price), '0.00');
     await page.evaluate(() => plantDetail(state.plants.find(p => p.name === '自定义测试一').id));
-    assert.ok((await page.locator('#modal-root').innerText()).includes('¥19.90'));
-    await page.locator('#modal-root [data-action="edit-plant"]').first().click();
+    assert.ok((await page.locator('#app').innerText()).includes('¥19.90'));
+    await page.locator('#app [data-action="edit-plant"]').first().click();
     assert.equal(await price.inputValue(), '19.90');
     await price.fill('12.35');
     await form.locator('[type="submit"]').click();
     await page.waitForFunction(() => state.plants.find(p => p.name === '自定义测试一').price === '12.35');
-    await page.locator('#modal-root [data-action="close-modal"]').first().click();
+    await page.locator('[data-action="page-back"]').click();
     await page.locator('[data-nav="plants"]:visible').first().click();
     await page.locator('[data-action="new-plant"]:visible').first().click();
     for (const [key, value] of Object.entries({ interval: '13', location: '北窗书房', source: '邻居赠送', status: '休眠中' }))

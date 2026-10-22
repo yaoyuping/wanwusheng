@@ -24,7 +24,7 @@ try {
     await page.evaluate(async photo => {
       state.sightings = [{ id: 'legacy', name: '无患子', latin: 'Sapindus mukorossi', notes: '老记录的个人备注。', date: '2026-10-18', location: '植物园', image: photo }];
       state.plants = ['生病中', '需关注', '休眠中'].map((status, i) => ({ id: 'p' + i, name: '状态植物' + i, status, image: photo, logs: [] }));
-      await save(); ui.tab = 'atlas'; render();
+      await save(); go('atlas');
     }, oldPhoto);
     assert.equal(await page.locator('#mobile-nav [data-nav="settings"]').count(), 0);
     assert.equal(await page.locator('#mobile-nav button').count(), 4);
@@ -41,7 +41,7 @@ try {
     await page.waitForFunction(() => !document.getElementById('sighting-form'));
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => state?.sightings?.[0]?.images?.length === 2);
-    await page.evaluate(() => { ui.tab = 'atlas'; render(); });
+    await page.evaluate(() => { go('atlas'); });
     await page.locator('[data-action="sighting-detail"][data-id="legacy"]').click();
     assert.equal(await page.locator('.v57-visit-photos img').count(), 2);
     assert.ok((await page.locator('.v56-visit-note').innerText()).includes('保留两张'));
@@ -61,7 +61,7 @@ try {
     assert.doesNotMatch(await page.locator('#v56-guide-content').innerText(), /候选|草稿|假设/);
     await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => state?.encyclopediaEntries?.['latin:sapindus mukorossi']);
-    await page.evaluate(() => { ui.tab = 'atlas'; render(); sightingDetail('legacy'); });
+    await page.evaluate(() => { go('atlas'); sightingDetail('legacy'); });
     await page.locator('[data-action="v56-open-guide"]').click();
     await page.locator('.v54-chapters').waitFor(); assert.equal(requests, 1);
     await page.locator('[data-action="v56-refresh-guide"]').click();
@@ -80,7 +80,7 @@ try {
     await page.locator('#plant-form [type="submit"]').click();
     await page.waitForFunction(() => state.plants.some(plant => plant.name === '我的无患子'));
     assert.equal(await page.evaluate(() => state.sightings.length), 1);
-    await page.locator('#modal-root [data-action="close-modal"]').first().click();
+    await page.locator('[data-action="page-back"]').click();
     await page.evaluate(() => { ui.tab = 'plants'; render(); });
     assert.equal(await page.locator('.plant-card .card-photo .v57-status-badge').count(), 3);
     assert.ok((await page.locator('.is-ill').innerText()).includes('生病中'));

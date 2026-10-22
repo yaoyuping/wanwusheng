@@ -32,7 +32,7 @@ try {
   await page.locator('[data-action="v59-undo"]').waitFor();
   await page.reload(); await page.waitForFunction(() => state?.plants?.length === 2);
   assert.equal(await page.evaluate(id => state.plants[0].logs.some(l => l.id === id), latestId), false);
-  await page.evaluate(() => { ui.tab = 'care'; render(); });
+  await page.evaluate(() => { go('care'); });
   const t1 = page.locator('[data-action="v59-delete-task"][data-id="t1"]');
   page.once('dialog', d => d.accept()); await t1.click();
   await page.locator('[data-action="v59-undo"]').waitFor();
@@ -46,11 +46,12 @@ try {
   await page.locator('[data-action="v59-undo"]').waitFor();
   assert.equal(await generated.count(), 0);
   await page.reload(); await page.waitForFunction(() => state?.plants?.length === 2);
-  await page.evaluate(() => { ui.tab = 'care'; render(); });
+  await page.evaluate(() => { go('care'); });
   assert.equal(await generated.count(), 0);
   assert.equal(await page.evaluate(() => state.plants.some(p => p.id === 'p2')), true);
   await page.evaluate(async () => { state.plants[1].lastWatered = v2plusDate(stamp(), -3); await save(); render(); });
   assert.equal(await generated.count(), 1, 'A new watering cycle gets a new check');
+  await page.evaluate(() => plantDetail('p1', 'logs'));
   const logId = await page.evaluate(() => state.plants[0].logs.find(l => l.note === '相同内容').id);
   page.once('dialog', d => d.accept()); await page.locator(`[data-action="v59-delete-log"][data-log-id="${logId}"]`).click();
   await page.locator('[data-action="v59-undo"]').waitFor();

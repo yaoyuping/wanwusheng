@@ -259,7 +259,7 @@ function sightingPhotos(record) {
   render = function() {
     destroyMap(atlasMapId);
     oldRender();
-    if (ui.tab === 'atlas') mountMap(atlasMapId, matchedGroups().flatMap(group => group.records));
+    if (ui.tab === 'atlas' && !window.yiyuPages?.active) mountMap(atlasMapId, matchedGroups().flatMap(group => group.records));
   };
 
   sightingDetail = function(id) {
@@ -271,8 +271,7 @@ function sightingPhotos(record) {
       const note = observation(record.notes), photos = sightingPhotos(record);
       return `<article class="v56-visit"><div class="v56-visit-top"><span class="v56-dot" aria-hidden="true"></span><b>${esc(datePretty(record.date))}</b><span class="v56-place-pill">${ico('pin', 13)} ${esc(record.location || '地点未记录')}</span>${index === records.length - 1 ? '<span class="v56-first-pill">首次发现</span>' : ''}</div>${note ? `<p class="v56-visit-note">${esc(note)}</p>` : '<p class="v56-visit-note v56-muted">未填写当时备注</p>'}${photos.length ? `<p class="v57-photo-count">${photos.length} 张照片</p><div class="v57-visit-photos">${photos.map((photo, photoIndex) => `<button class="v56-visit-photo" type="button" data-action="v57-view-photo" data-id="${esc(record.id)}" data-index="${photoIndex}" aria-label="查看${esc(record.name)}第 ${photoIndex + 1} 张照片">${imgTag(photo, record.name)}</button>`).join('')}</div>` : ''}<div class="v56-visit-actions"><button type="button" data-action="edit-sighting" data-id="${esc(record.id)}">编辑这次发现</button></div></article>`;
     }).join('');
-    modal('发现档案 · ' + first.name, `<div class="v56-record-page"><div class="v56-record-cover">${imgTag(cover, first.name)}<span>发现档案 · FIELD NOTES</span></div><div class="v56-record-head"><div><h2>${esc(first.name)}</h2><p class="latin">${esc(group.latin || '学名尚待核实')}</p></div><strong>${records.length} 次发现</strong></div><div class="v56-record-stats"><span>观察次数 <b>${records.length}</b></span><span>记录地点 <b>${locationRows.filter(place => place.name !== '未记录地点').length}</b></span></div><section class="v56-observation"><div class="v56-section-title"><h3>观察足迹</h3><span>按地点汇总</span></div><div class="v56-place-list">${placeCards}</div></section><section class="v56-timeline"><div class="v56-section-title"><h3>发现记录</h3><span>备注与照片按日期排列</span></div>${timeline}</section><div class="v56-record-actions"><button class="outlined-btn" type="button" data-action="v56-add-plant" data-id="${esc(first.id)}">＋ 加入我的植物</button><button class="outlined-btn" type="button" data-action="v56-add-record" data-id="${esc(first.id)}">＋ 添加记录</button><button class="primary-btn" type="button" data-action="v56-open-guide" data-id="${esc(first.id)}">了解植物百科 →</button></div></div>`);
-    document.querySelector('#modal-root .modal')?.classList.add('v56-record-modal');
+    window.yiyuPages.show({ kind: 'record', id }, '发现档案 · ' + first.name, `<div class="v56-record-page"><div class="v56-record-cover">${imgTag(cover, first.name)}<span>发现档案 · FIELD NOTES</span></div><div class="v56-record-head"><div><h2>${esc(first.name)}</h2><p class="latin">${esc(group.latin || '学名尚待核实')}</p></div><strong>${records.length} 次发现</strong></div><div class="v56-record-stats"><span>观察次数 <b>${records.length}</b></span><span>记录地点 <b>${locationRows.filter(place => place.name !== '未记录地点').length}</b></span></div><section class="v56-observation"><div class="v56-section-title"><h3>观察足迹</h3><span>按地点汇总</span></div><div class="v56-place-list">${placeCards}</div></section><section class="v56-timeline"><div class="v56-section-title"><h3>发现记录</h3><span>备注与照片按日期排列</span></div>${timeline}</section><div class="v56-record-actions"><button class="outlined-btn" type="button" data-action="v56-add-plant" data-id="${esc(first.id)}">＋ 加入我的植物</button><button class="outlined-btn" type="button" data-action="v56-add-record" data-id="${esc(first.id)}">＋ 添加记录</button><button class="primary-btn" type="button" data-action="v56-open-guide" data-id="${esc(first.id)}">了解植物百科 →</button></div></div>`);
   };
 
   function guideKey(group) { return encyclopedia.keyFor({ name: group.first.name, latin: group.latin }); }
@@ -309,8 +308,7 @@ function sightingPhotos(record) {
     if (!group) return;
     const cover = group.records.flatMap(sightingPhotos)[0] || '';
     const key = guideKey(group), cached = state.encyclopediaEntries?.[key];
-    modal('植物百科 · ' + group.first.name, `<div class="v56-encyclopedia"><div class="v56-guide-cover">${imgTag(cover, group.first.name)}</div><div class="v56-guide-nav"><button type="button" class="outlined-btn" data-action="v56-back-record" data-id="${esc(id)}">← 返回发现档案</button><button type="button" class="outlined-btn" data-action="v56-refresh-guide" data-id="${esc(id)}">更新百科</button></div><p class="v57-cache-state" id="v57-cache-state" role="status"></p><div id="v56-guide-content" aria-live="polite"></div></div>`);
-    document.querySelector('#modal-root .modal')?.classList.add('v56-record-modal', 'v56-guide-modal');
+    window.yiyuPages.show({ kind: 'guide', id }, '植物百科 · ' + group.first.name, `<div class="v56-encyclopedia"><div class="v56-guide-cover">${imgTag(cover, group.first.name)}</div><div class="v56-guide-nav"><button type="button" class="outlined-btn" data-action="v56-back-record" data-id="${esc(id)}">← 返回发现档案</button><button type="button" class="outlined-btn" data-action="v56-refresh-guide" data-id="${esc(id)}">更新百科</button></div><p class="v57-cache-state" id="v57-cache-state" role="status"></p><div id="v56-guide-content" aria-live="polite"></div></div>`);
     const target = document.getElementById('v56-guide-content');
     const status = document.getElementById('v57-cache-state'), refreshButton = document.querySelector('[data-action="v56-refresh-guide"]');
     let hasCached = false;
@@ -338,6 +336,8 @@ function sightingPhotos(record) {
       }
     } finally { if (refreshButton.isConnected) refreshButton.disabled = false; }
   }
+
+  window.yiyuRenderGuide = openGuide;
 
   const oldAct = act;
   act = async function(action, element) {

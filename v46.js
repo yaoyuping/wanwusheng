@@ -25,7 +25,7 @@ function v46DecorateSegments(form){for(const key of ['location','light','interva
  } }
 plantForm=function(pid=null,prefill={}){v46PriorPlantForm(pid,prefill);const form=$('#plant-form');if(!form)return;v46DecorateSegments(form);const header=document.querySelector('#modal-root .modal-header h2');if(header)header.textContent=pid?'编辑 · '+(state.plants.find(p=>p.id===pid)?.name||'植物档案'):'收下一株植物';};
 plantDetail=function(pid,tab='info'){v46PriorPlantDetail(pid,tab);const p=state?.plants?.find(x=>x.id===pid);if(!p)return;
- const body=document.querySelector('#modal-root .v3-plant-body');if(!body||tab!=='info')return;const tokens=document.createElement('div');tokens.className='v46-detail-tokens';tokens.innerHTML=[['摆放位置',p.location||'未设置'],['光照条件',p.light||'未设置'],['检查周期',(Number(p.interval)||7)+'天']].map(([a,b])=>`<div><small>${esc(a)}</small><b>${esc(b)}</b></div>`).join('');body.prepend(tokens);
+ const body=document.querySelector('#app .v3-plant-body');if(!body||tab!=='info')return;const tokens=document.createElement('div');tokens.className='v46-detail-tokens';tokens.innerHTML=[['摆放位置',p.location||'未设置'],['光照条件',p.light||'未设置'],['检查周期',(Number(p.interval)||7)+'天']].map(([a,b])=>`<div><small>${esc(a)}</small><b>${esc(b)}</b></div>`).join('');body.prepend(tokens);
 };
 act=async function(action,el){
  if(action==='v46-pick'){const form=el.closest('form'),select=form?.querySelector(`select[name="${el.dataset.key}"]`);if(!select)return;select.value=el.dataset.value;const row=el.closest('.v46-segment-row');row?.querySelectorAll('.v46-segment').forEach(b=>{const chosen=b===el;b.classList.toggle('active',chosen);b.setAttribute('aria-pressed',String(chosen))});select.dispatchEvent(new Event('change',{bubbles:true}));return;}
