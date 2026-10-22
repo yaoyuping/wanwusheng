@@ -1,0 +1,20 @@
+.v54-guide { color: var(--ink, #254d3d); padding: 25px; background: #fafbf6; border: 1px solid #dce7d9; border-radius: 22px; }
+.v54-guide-head { margin-bottom: 20px; }
+.v54-guide-kicker { font-size: 11px; letter-spacing: .12em; color: #738f7c; }
+.v54-guide-head h3 { font-size: clamp(25px, 4vw, 36px); margin: 12px 0 7px; }
+.v54-guide-head p { margin: 5px 0; }
+.v54-draft-label { display: inline-block; margin-top: 12px; font-size: 12px; padding: 6px 11px; border-radius: 20px; color: #85622d; background: #f6efd9; }
+.v54-summary, .v54-chapters p, .v54-evidence p { white-space: pre-line; line-height: 1.9; overflow-wrap: anywhere; }
+.v54-chapters { margin: 22px 0; }
+.v54-chapters details { border-top: 1px solid #dce7d9; padding: 16px 0; }
+.v54-chapters summary { cursor: pointer; font-weight: 650; font-size: 18px; }
+.v54-chapters summary span { color: #86a08b; font-size: 12px; margin-right: 13px; }
+.v54-evidence { margin-top: 18px; color: #647c68; }
+.v54-evidence summary { cursor: pointer; }
+.v54-guide-notice { font-size: 12px; color: #758774; line-height: 1.7; }
+.v54-guide-actions, .v54-candidate-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.v54-guide-actions { margin-top: 20px; }
+.v54-candidate-actions { padding: 0 20px 20px; }
+.v54-candidate-actions button { flex: 1 1 145px; }
+.v54-loading { padding: 25px; color: #526f59; line-height: 1.8; }
+@media (max-width: 600px) { .v54-guide { padding: 20px 16px; } .v54-guide-actions button { width: 100%; } }
