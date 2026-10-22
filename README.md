@@ -1,8 +1,8 @@
 # 万物生 · 植物篇
 
-网站：https://yaoyuping.github.io/yiyu-plants/
+网站：https://yaoyuping.github.io/wanwusheng/
 
-GitHub：https://github.com/yaoyuping/yiyu-plants （公开仓库）
+GitHub：https://github.com/yaoyuping/wanwusheng （公开仓库）
 
 导出文件名为 `万物生-完整备份-日期时间.json`，仍兼容原有“一隅”备份。植物档案、照片和笔记默认保存在当前浏览器，公开仓库不包含这些个人记录。
 
