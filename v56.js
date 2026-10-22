@@ -54,7 +54,7 @@ function sightingPhotos(record) {
 
   function mapSection(records, id, title) {
     const located = records.filter(record => coordinate(record));
-    return `<section class="v56-map-section v583-map-section" aria-label="${esc(title)}"><div class="v56-section-title"><div><h3>${esc(title)}</h3><span>${located.length} 次发现已留下足迹</span></div><button type="button" class="v583-map-fit" data-action="v583-map-fit" data-map="${id}">${ico('pin', 14)} 查看全部足迹</button></div>${searchBox(id)}<div class="v56-map v583-map" id="${id}" role="region" aria-label="${esc(title)}地图"></div>${located.length ? '' : '<p class="v56-map-empty">还没有带坐标的发现记录。搜索地点后，可在地图上添加一次发现。</p>'}<p class="v583-map-state" role="status" aria-live="polite"></p><p class="v56-map-credit"><span class="v583-map-dot" aria-hidden="true"></span>绿色标记记录植物相遇，点击可查看地点与发现次数。</p></section>`;
+    return `<section class="v56-map-section v583-map-section" aria-label="${esc(title)}"><div class="v56-section-title"><div><h3>${esc(title)}</h3><span>${located.length} 次发现已留下足迹</span></div><button type="button" class="v583-map-fit" data-action="v583-map-fit" data-map="${id}">${ico('pin', 14)} 查看全部足迹</button></div>${searchBox(id)}<div class="v56-map v583-map" id="${id}" role="region" aria-label="${esc(title)}地图"></div>${located.length ? '' : '<p class="v56-map-empty">还没有带坐标的发现记录。搜索地点后，可在地图上添加一次发现。</p>'}<p class="v583-map-state" role="status" aria-live="polite"></p><button type="button" class="v584-map-retry outlined-btn" data-action="v584-map-retry" data-map="${id}" hidden>重新加载地图</button><p class="v56-map-credit"><span class="v583-map-dot" aria-hidden="true"></span>绿色标记记录植物相遇，点击可查看地点与发现次数。</p></section>`;
   }
 
   function searchBox(mapId) {
@@ -74,19 +74,31 @@ function sightingPhotos(record) {
     const map = L.map(container, { scrollWheelZoom: false, zoomControl: false });
     maps.set(id, map);
     L.control.zoom({ position: 'topright', zoomInTitle: '放大地图', zoomOutTitle: '缩小地图' }).addTo(map);
-    const light = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { subdomains: 'abcd', maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">CARTO</a>' });
-    let failures = 0, usingFallback = false;
-    light.on('tileload', () => { failures = 0; });
-    light.on('tileerror', () => {
-      if (++failures < 3 || usingFallback || !container.isConnected || maps.get(id) !== map) return;
+    const status = container.parentElement.querySelector('.v583-map-state'), retry = container.parentElement.querySelector('.v584-map-retry');
+    retry.hidden = true; status.textContent = '正在加载地图…';
+    const light = L.tileLayer(yiyuAPILink('/api/map-tile?v=5.8.4&z={z}&x={x}&y={y}'), { maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>' });
+    let failures = 0, usingFallback = false, fallbackTimer;
+    const connected = () => container.isConnected && maps.get(id) === map;
+    const fallbackError = () => {
+      if (!connected()) return;
+      status.textContent = '底图暂时无法加载，可重试；搜索地点和发现记录仍可使用。'; retry.hidden = false;
+    };
+    const useFallback = () => {
+      if (usingFallback || !connected()) return;
       usingFallback = true;
+      clearTimeout(primaryTimer);
       map.removeLayer(light);
       const fallback = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; OpenStreetMap contributors' });
-      const status = container.parentElement.querySelector('.v583-map-state');
-      status.textContent = '浅色底图暂不可用，已切换标准地图。';
-      fallback.on('tileerror', () => { status.textContent = '底图暂时无法加载，搜索地点和已有发现记录仍可使用。'; });
+      status.textContent = '正在尝试备用地图…';
+      fallbackTimer = setTimeout(fallbackError, 10000);
+      fallback.on('tileload', () => { clearTimeout(fallbackTimer); if (connected()) { status.textContent = ''; retry.hidden = true; } });
+      fallback.on('tileerror', fallbackError);
       fallback.addTo(map);
-    });
+    };
+    const primaryTimer = setTimeout(useFallback, 10000);
+    map.on('unload', () => { clearTimeout(primaryTimer); clearTimeout(fallbackTimer); });
+    light.on('tileload', () => { failures = 0; clearTimeout(primaryTimer); if (connected() && !usingFallback) status.textContent = ''; });
+    light.on('tileerror', () => { if (++failures >= 3) useFallback(); });
     light.addTo(map);
     const pins = new Map();
     for (const record of located) {
@@ -330,6 +342,7 @@ function sightingPhotos(record) {
   const oldAct = act;
   act = async function(action, element) {
     const id = element.dataset.id;
+    if (action === 'v584-map-retry') return mountMap(element.dataset.map, matchedGroups().flatMap(group => group.records));
     if (action === 'v583-map-fit') {
       const map = maps.get(element.dataset.map);
       if (map) {

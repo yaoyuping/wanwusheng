@@ -14,7 +14,7 @@ try {
       navigator.geolocation.getCurrentPosition = () => { window.gpsCalls++; };
     });
     await page.route('https://tile.openstreetmap.org/**', route => route.fulfill({ body: tile, contentType: 'image/png' }));
-    await page.route('https://*.basemaps.cartocdn.com/**', route => route.fulfill({ body: tile, contentType: 'image/png' }));
+    await page.route('**/api/map-tile?*', route => route.fulfill({ body: tile, contentType: 'image/png' }));
     await page.route('**/api/status', route => route.fulfill({ json: { ready: true, places: true } }));
     await page.route('**/api/places?*', route => {
       const query = new URL(route.request().url()).searchParams.get('q'); queries.push(query);

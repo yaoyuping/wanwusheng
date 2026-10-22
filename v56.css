@@ -123,3 +123,7 @@
 .v583-map-section .v56-map-credit{display:flex;align-items:baseline;gap:7px;margin-top:12px;font-size:10px;color:#8c9c8a}
 .v583-map-dot{display:inline-block;flex-shrink:0;width:7px;height:7px;border-radius:50%;background:#3c7655}
 @media(max-width:620px){.v583-map-section{padding:15px;border-radius:22px}.v583-map-section>.v56-section-title{gap:8px}.v583-map-section>.v56-section-title h3{font-size:20px}.v583-map-fit{font-size:10px;padding:8px 9px}.v583-map-section .v583-map{height:300px;border-radius:16px}.v583-map-section .v58-search-line{flex-wrap:nowrap;gap:7px}.v583-map-section .v58-search-line input{flex-basis:0;padding:11px 10px;font-size:16px}.v583-map-section .v58-search-line button{width:auto;font-size:11px;padding:9px 12px!important}.v583-map-section .v56-map-credit{font-size:10px}}
+.v584-map-retry{margin-top:10px;font-size:12px!important;min-height:38px!important}
+.v584-map-retry[hidden]{display:none!important}
+
+.v583-map .leaflet-tile-pane{filter:saturate(.55) contrast(.96) brightness(1.03)}
