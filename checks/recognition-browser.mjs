@@ -58,12 +58,16 @@ try {
     await page.locator('[data-nav="atlas"]:visible').first().click();
     const savedId = await page.evaluate(name => state.sightings.find(s => s.name === name).id, savedName);
     await page.locator(`[data-action="sighting-detail"][data-id="${savedId}"]`).first().click();
+    assert.equal(await page.locator('#modal-root .v56-visit').count(), 1);
+    assert.equal(await page.locator('#modal-root .v54-guide').count(), 0);
+    await page.locator('[data-action="v56-open-guide"]').click();
+    await page.locator('#v56-guide-content .v54-chapters').waitFor();
     assert.equal(await page.locator('#modal-root .v54-chapters > details').count(), 6);
     assert.ok(await page.locator('#modal-root .v54-guide').innerText().then(s => s.includes('扇形叶')));
     assert.ok((await page.locator('#modal-root .v54-summary').innerText()).includes('植物概述'));
     assert.ok((await page.locator('#modal-root .v54-guide-head').innerText()).includes('Ginkgoaceae'));
-    assert.ok((await page.locator('#modal-root .v54-evidence p').textContent()).includes('二叉叶脉'));
-    await page.screenshot({ path: join(output, `${device}-saved-atlas.png`) });
+    assert.equal(await page.locator('#modal-root .v54-evidence').count(), 0);
+    await page.screenshot({ path: join(output, `${device}-saved-encyclopedia.png`) });
     await page.locator('#modal-root [data-action="close-modal"]').first().click();
     await goToRecognition();
     await page.locator('[data-action="v51-plantnet"]').click();

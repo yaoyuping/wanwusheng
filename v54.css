@@ -3,6 +3,10 @@
 .v54-guide-kicker { font-size: 11px; letter-spacing: .12em; color: #738f7c; }
 .v54-guide-head h3 { font-size: clamp(25px, 4vw, 36px); margin: 12px 0 7px; }
 .v54-guide-head p { margin: 5px 0; }
+.v54-aliases,.v54-keywords{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:12px 0}
+.v54-aliases span,.v54-keywords span{display:inline-block;padding:5px 10px;border-radius:99px;background:#eaf3e9;color:#486f55;font-size:12px}
+.v54-keywords small{font-size:11px;color:#718674;font-weight:700;margin-right:3px}
+.v54-guide mark{background:#e3f3df;color:#236e46;border-radius:3px;padding:0 2px;font-weight:750}
 .v54-draft-label { display: inline-block; margin-top: 12px; font-size: 12px; padding: 6px 11px; border-radius: 20px; color: #85622d; background: #f6efd9; }
 .v54-summary, .v54-chapters p, .v54-evidence p { white-space: pre-line; line-height: 1.9; overflow-wrap: anywhere; }
 .v54-chapters { margin: 22px 0; }

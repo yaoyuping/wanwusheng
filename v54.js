@@ -9,24 +9,33 @@
   let current = null, currentPlantGuide = null, requestId = 0, photoBusy = false;
   const plantGuides = new Map();
 
-  function guide(entry, actions = '') {
+  function highlighted(value, words = []) {
+    const terms = words.filter(word => typeof word === 'string' && word.trim().length >= 2).sort((a, b) => b.length - a.length).slice(0, 8);
+    if (!terms.length) return esc(value || '');
+    const regex = new RegExp(`(${terms.map(word => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'gi');
+    return String(value || '').split(regex).map(part => terms.some(word => word.toLowerCase() === part.toLowerCase()) ? `<mark>${esc(part)}</mark>` : esc(part)).join('');
+  }
+
+  function guide(entry, actions = '', showEvidence = true) {
     const taxonomy = [entry.family, entry.genus].filter(Boolean).join(' · ');
     return `<article class="v54-guide" aria-label="植物百科介绍">
-      <header class="v54-guide-head"><span class="v54-guide-kicker">BOTANICAL ENCYCLOPEDIA · 植物百科</span><h3>${esc(entry.name)}</h3>${entry.latin ? `<p class="latin">${esc(entry.latin)}</p>` : ''}${taxonomy ? `<p>${esc(taxonomy)}</p>` : ''}<span class="v54-draft-label">${entry.uncertain ? '物种尚待确认 · AI 草稿' : '候选识别 · AI 草稿'}</span></header>
-      ${entry.summary ? `<p class="v54-summary">${esc(entry.summary)}</p>` : ''}
-      ${entry.evidence ? `<details class="v54-evidence"><summary>识别依据与核对建议</summary><p>${esc(entry.evidence)}</p></details>` : ''}
-      <div class="v54-chapters">${chapters.map(([key, title], index) => `<details ${index === 0 ? 'open' : ''}><summary><span>${String(index + 1).padStart(2, '0')}</span>${title}</summary><p>${esc(entry.sections[key])}</p></details>`).join('')}</div>
+      <header class="v54-guide-head"><span class="v54-guide-kicker">BOTANICAL ENCYCLOPEDIA · 植物百科</span><h3>${esc(entry.name)}</h3>${entry.latin ? `<p class="latin">${esc(entry.latin)}</p>` : ''}${entry.aliases?.length ? `<div class="v54-aliases">${entry.aliases.map(alias => `<span>${esc(alias)}</span>`).join('')}</div>` : ''}${taxonomy ? `<p>${esc(taxonomy)}</p>` : ''}<span class="v54-draft-label">${entry.uncertain ? '物种尚待确认 · AI 草稿' : '候选识别 · AI 草稿'}</span></header>
+      ${entry.summary ? `<p class="v54-summary">${highlighted(entry.summary, entry.keywords)}</p>` : ''}
+      ${entry.keywords?.length ? `<div class="v54-keywords"><small>重点词</small>${entry.keywords.map(word => `<span>${esc(word)}</span>`).join('')}</div>` : ''}
+      ${showEvidence && entry.evidence ? `<details class="v54-evidence"><summary>识别依据与核对建议</summary><p>${esc(entry.evidence)}</p></details>` : ''}
+      <div class="v54-chapters">${chapters.map(([key, title], index) => `<details ${index === 0 ? 'open' : ''}><summary><span>${String(index + 1).padStart(2, '0')}</span>${title}</summary><p>${highlighted(entry.sections[key], entry.keywords)}</p></details>`).join('')}</div>
       <p class="v54-guide-notice">AI 生成内容需核对，候选名称不等同于物种鉴定。保存前可修改名称和学名。</p>${actions ? `<div class="v54-guide-actions">${actions}</div>` : ''}</article>`;
   }
 
   function validateEntry(value) {
     if (!value || typeof value.name !== 'string' || !value.name.trim() || chapters.some(([key]) => typeof value.sections?.[key] !== 'string' || !value.sections[key].trim())) throw Error('服务未返回完整植物百科，请检查后端地址或重新分析。');
     const text = (v, limit = 1200) => typeof v === 'string' ? v.trim().slice(0, limit) : '';
-    return { name: text(value.name, 100), latin: text(value.latin, 180), family: text(value.family, 100), genus: text(value.genus, 100), summary: text(value.summary), evidence: text(value.evidence), uncertain: value.uncertain !== false, sections: Object.fromEntries(chapters.map(([key]) => [key, text(value.sections[key])])) };
+    const terms = (items, limit) => Array.isArray(items) ? [...new Set(items.filter(item => typeof item === 'string').map(item => text(item, 32)).filter(Boolean))].slice(0, limit) : [];
+    return { name: text(value.name, 100), latin: text(value.latin, 180), family: text(value.family, 100), genus: text(value.genus, 100), aliases: terms(value.aliases, 6), keywords: terms(value.keywords, 8), summary: text(value.summary), evidence: text(value.evidence), uncertain: value.uncertain !== false, sections: Object.fromEntries(chapters.map(([key]) => [key, text(value.sections[key])])) };
   }
 
   function notesFor(entry, source) {
-    return [marker, `来源：${source} · AI 生成，需核实`, '识别候选，保存不代表已确认物种。', `【科属信息】\n科：${entry.family || '待核实'}\n属：${entry.genus || '待核实'}`, `【概述】\n${entry.summary || ''}`, `【识别依据与核对】\n${entry.evidence || ''}`, ...chapters.map(([key, title]) => `【${title}】\n${entry.sections[key]}`)].join('\n\n');
+    return [marker, `来源：${source} · AI 生成，需核实`, '识别候选，保存不代表已确认物种。', `【别名】\n${(entry.aliases || []).join('、')}`, `【重点词】\n${(entry.keywords || []).join('、')}`, `【科属信息】\n科：${entry.family || '待核实'}\n属：${entry.genus || '待核实'}`, `【概述】\n${entry.summary || ''}`, `【识别依据与核对】\n${entry.evidence || ''}`, ...chapters.map(([key, title]) => `【${title}】\n${entry.sections[key]}`)].join('\n\n');
   }
 
   function savedGuide(sighting) {
@@ -42,7 +51,7 @@
     }
     const between = (from, to) => { const a = notes.indexOf(from, start), b = a < 0 ? -1 : notes.indexOf(to, a + from.length); return a < 0 || b < 0 ? '' : notes.slice(a + from.length, b).trim(); };
     const taxonomy = between('【科属信息】', '【概述】');
-    return { name: sighting.name, latin: sighting.latin, family: taxonomy.match(/^科：(.+)$/m)?.[1] || '', genus: taxonomy.match(/^属：(.+)$/m)?.[1] || '', summary: between('【概述】', '【识别依据与核对】') || '已保存的识别植物百科草稿，可在编辑记录中修改，资料仍需核实。', evidence: between('【识别依据与核对】', '【形态特征】'), uncertain: true, sections };
+    return { name: sighting.name, latin: sighting.latin, family: taxonomy.match(/^科：(.+)$/m)?.[1] || '', genus: taxonomy.match(/^属：(.+)$/m)?.[1] || '', aliases: between('【别名】', '【重点词】').split('、').filter(Boolean), keywords: between('【重点词】', '【科属信息】').split('、').filter(Boolean), summary: between('【概述】', '【识别依据与核对】') || '已保存的识别植物百科草稿，可在编辑记录中修改，资料仍需核实。', evidence: between('【识别依据与核对】', '【形态特征】'), uncertain: true, sections };
   }
 
   function addToAtlas(value) {
@@ -163,4 +172,5 @@
     if (current && ui.aiImage !== current.image) { current = null; ui.v53AIAnswer = ''; }
     return previousRecognize();
   };
+  window.yiyuEncyclopedia = Object.freeze({ guide, savedGuide, validateEntry });
 })();

@@ -1,0 +1,62 @@
+/* 万物生 v5.6 · 地图、发现档案与独立植物百科。 */
+.v56-map-section{margin:24px 0;background:#fffefa;border:1px solid #e5ece2;border-radius:22px;padding:19px}
+.v56-section-title{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 14px}
+.v56-section-title h3{margin:0;border-left:4px solid #519b78;padding-left:11px;font-size:21px;color:#284a38}
+.v56-section-title span{font-size:12px;color:#839388}
+.v56-map{height:320px;width:100%;border-radius:16px;overflow:hidden;background:#e9efe8;z-index:0}
+.v56-map-empty{margin:0;padding:21px;border-radius:15px;background:#f3f7f1;color:#708778;font-size:13px;line-height:1.7}
+.v56-map-credit{font-size:11px;color:#829487;line-height:1.6;margin:9px 1px 0}
+.v56-pin{border:0;background:transparent}
+.v56-pin span{width:35px;height:35px;display:grid;place-items:center;border:3px solid #fff;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);background:#257758;color:#fff;font-size:12px;font-weight:800;box-shadow:0 4px 14px #153b2c55}
+.v56-pin b{transform:rotate(45deg);line-height:1}
+.v56-map-popup{min-width:145px;max-height:170px;overflow:auto;color:#315242;font-size:12px;line-height:1.5}
+.v56-map-popup>div{padding:5px 0;border-bottom:1px solid #e7eee7}
+.v56-map-popup small{display:block;color:#88958a}
+.v56-group-card{position:relative;text-align:left}
+.v56-count-badge{position:absolute;right:10px;bottom:10px;display:inline-block;padding:5px 10px;border-radius:99px;background:#fefef9ef;color:#246b4b;font-size:11px;font-weight:800}
+.modal.v56-record-modal{max-width:880px!important;padding:0!important;overflow:auto}
+.v56-record-modal .modal-header{padding:17px 23px;margin:0!important;position:sticky;top:0;z-index:20;background:#fffefa!important}
+.v56-record-page,.v56-encyclopedia{padding:0 26px 25px}
+.v56-record-cover,.v56-guide-cover{position:relative;height:245px;background:#e5ece2;border-radius:0 0 22px 22px;overflow:hidden;margin:0 -26px 23px}
+.v56-record-cover>img,.v56-guide-cover>img{width:100%;height:100%;object-fit:cover;display:block}
+.v56-record-cover>span{position:absolute;left:24px;bottom:16px;border-radius:99px;padding:6px 11px;background:#133b2cbd;color:#fff;font-size:11px;letter-spacing:.06em}
+.v56-record-head{display:flex;justify-content:space-between;align-items:center;gap:15px}
+.v56-record-head h2{font-size:clamp(29px,5vw,39px);line-height:1.25;margin:0;color:#243c30}
+.v56-record-head p{margin:8px 0 0;font-size:16px}
+.v56-record-head>strong{white-space:nowrap;background:#eaf4eb;color:#2b7152;border-radius:99px;padding:8px 14px;font-size:13px}
+.v56-record-stats{display:flex;flex-wrap:wrap;gap:9px;margin:19px 0 29px}
+.v56-record-stats span{background:#f2f6f0;border-radius:13px;padding:11px 15px;color:#718577;font-size:12px}
+.v56-record-stats b{color:#246d4b;font-size:19px;margin-left:7px}
+.v56-observation,.v56-timeline{margin:28px 0}
+.v56-place-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.v56-place-card{display:grid;grid-template-columns:1fr auto;gap:7px 9px;align-items:center;background:#f5f8f4;border:1px solid #e3eae2;border-radius:17px;padding:15px}
+.v56-place-card>span{display:flex;align-items:center;gap:7px;min-width:0;color:#415a47;font-size:13px}
+.v56-place-card b{overflow-wrap:anywhere}
+.v56-place-card strong{color:#267450;font-size:15px}
+.v56-place-card small{grid-column:1/-1;color:#77877a;font-size:11px}
+.v56-visit{position:relative;margin:0 0 15px 11px;padding:0 0 19px 25px;border-left:2px solid #e5eee6}
+.v56-visit:last-child{border-left-color:transparent}
+.v56-visit-top{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.v56-visit-top>b{font-size:17px;color:#263d31}
+.v56-dot{position:absolute;left:-8px;top:5px;width:14px;height:14px;background:#5ca987;border:3px solid #e9f4ee;border-radius:50%}
+.v56-place-pill,.v56-first-pill{display:inline-flex;align-items:center;gap:4px;padding:4px 8px;border-radius:99px;background:#eff3ef;color:#6a806f;font-size:11px}
+.v56-first-pill{color:#9b712b;background:#fbf1db}
+.v56-visit-note{white-space:pre-line;overflow-wrap:anywhere;font-size:13px;line-height:1.8;color:#465a4c;margin:9px 0}
+.v56-muted{color:#91a098}
+.v56-visit-photo{width:130px;height:110px;border-radius:15px;overflow:hidden;margin:9px 0 12px;background:#e8eee7}
+.v56-visit-photo img{width:100%;height:100%;object-fit:cover}
+.v56-visit-actions{display:flex;flex-wrap:wrap;gap:12px}
+.v56-visit-actions a,.v56-visit-actions button{border:0;background:none;padding:0;color:#34815a;font-size:12px;text-decoration:underline}
+.v56-record-actions{position:sticky;bottom:0;display:flex;gap:10px;justify-content:flex-end;margin:26px -26px -25px;padding:14px 26px;background:#fffefaee;border-top:1px solid #e8eee7;backdrop-filter:blur(12px);z-index:10}
+.v56-record-actions button{min-width:170px}
+.v56-guide-cover{height:290px}
+.v56-guide-nav{display:flex;justify-content:space-between;gap:10px;margin:17px 0}
+.v56-guide-nav button{min-height:37px!important;font-size:12px!important}
+.v56-encyclopedia .v54-guide{background:transparent;border:0;padding:6px 0 12px}
+.v56-encyclopedia .v54-summary{background:#eff7f2;border-left:4px solid #16825f;border-radius:14px;padding:19px;font-size:15px;line-height:1.9}
+.v56-taxonomy{display:grid;gap:0;background:#f6f8f4;border-radius:17px;padding:5px 18px;margin:23px 0}
+.v56-taxonomy>div{display:flex;align-items:center;gap:15px;padding:12px 0;border-bottom:1px solid #e6ede6}
+.v56-taxonomy>div:last-child{border-bottom:0}
+.v56-taxonomy small{min-width:42px;color:#87998a}
+.v56-taxonomy strong{font-weight:650;color:#2e513c;overflow-wrap:anywhere}
+@media(max-width:620px){#modal-root .modal-backdrop:has(.v56-record-modal){padding:0}.modal.v56-record-modal{width:100%;height:100dvh;max-height:100dvh;border-radius:0!important}.v56-record-modal .modal-header{border-radius:0!important;padding:11px 16px}.v56-record-modal .modal-header h2{font-size:17px!important}.v56-record-page,.v56-encyclopedia{padding:0 17px 20px}.v56-record-cover,.v56-guide-cover{margin:0 -17px 19px;height:220px;border-radius:0 0 20px 20px}.v56-guide-cover{height:260px}.v56-map{height:240px}.v56-map-section{padding:13px;border-radius:18px}.v56-section-title h3{font-size:19px}.v56-section-title span{font-size:10px}.v56-place-list{grid-template-columns:1fr}.v56-record-head>strong{font-size:11px}.v56-record-head p{font-size:13px}.v56-record-actions{margin:22px -17px -20px;padding:10px 17px}.v56-record-actions button{min-width:0;flex:1;padding:10px 7px!important;font-size:12px!important}.v56-visit-top>b{font-size:15px}.v56-encyclopedia .v54-summary{padding:14px;font-size:14px}}
