@@ -1,9 +1,14 @@
 /* 万物生 v5.6 · 同种发现归档、自动足迹地图与独立植物百科。 */
+function sightingPhotos(record) {
+  return (Array.isArray(record?.images) ? record.images : [record?.image || record?.photo]).filter(value => typeof value === 'string' && imageSrc(value));
+}
+
 (() => {
   'use strict';
   const atlasMapId = 'v56-atlas-map', recordMapId = 'v56-record-map';
   const encyclopedia = window.yiyuEncyclopedia;
   const maps = new Map();
+  const pendingGuides = new Map();
   const observationMarker = '【AI 植物百科草稿】';
 
   function coordinate(sighting) {
@@ -81,7 +86,7 @@
   }
 
   function groupCard(group) {
-    const first = group.first, cover = group.records.find(record => imageSrc(record.image))?.image || '', namedPlaces = places(group.records).filter(place => place.name !== '未记录地点');
+    const first = group.first, cover = group.records.flatMap(sightingPhotos)[0] || '', namedPlaces = places(group.records).filter(place => place.name !== '未记录地点');
     return `<button class="atlas-card v56-group-card" type="button" data-action="sighting-detail" data-id="${esc(first.id)}"><div class="card-photo">${imgTag(cover, first.name)}<span class="v56-count-badge">${group.records.length} 次发现</span></div><h3>${esc(first.name)}</h3><p class="latin">${esc(group.latin || '学名待核实')}</p><div class="atlas-caption">${ico('pin', 13)} ${esc(namedPlaces.slice(0, 2).map(place => place.name).join(' · ') || '地点待记录')}${namedPlaces.length > 2 ? ` 等 ${namedPlaces.length} 处` : ''}</div></button>`;
   }
 
@@ -124,19 +129,19 @@
     destroyMap(recordMapId);
     const group = groupFor(id);
     if (!group) return;
-    const { first, records } = group, cover = records.find(record => imageSrc(record.image))?.image || '', locationRows = places(records);
+    const { first, records } = group, cover = records.flatMap(sightingPhotos)[0] || '', locationRows = places(records);
     const placeCards = locationRows.map(place => `<div class="v56-place-card"><span>${ico('pin', 18)} <b>${esc(place.name)}</b></span><strong>${place.count} 次</strong><small>首次 ${esc(datePretty(place.first))} · 最近 ${esc(datePretty(place.latest))}</small></div>`).join('');
     const timeline = records.map((record, index) => {
-      const point = coordinate(record), note = observation(record.notes);
+      const point = coordinate(record), note = observation(record.notes), photos = sightingPhotos(record);
       const osm = point ? `https://www.openstreetmap.org/?mlat=${encodeURIComponent(point[0])}&mlon=${encodeURIComponent(point[1])}#map=16/${encodeURIComponent(point[0])}/${encodeURIComponent(point[1])}` : '';
-      return `<article class="v56-visit"><div class="v56-visit-top"><span class="v56-dot" aria-hidden="true"></span><b>${esc(datePretty(record.date))}</b><span class="v56-place-pill">${ico('pin', 13)} ${esc(record.location || '地点未记录')}</span>${index === records.length - 1 ? '<span class="v56-first-pill">首次发现</span>' : ''}</div>${note ? `<p class="v56-visit-note">${esc(note)}</p>` : '<p class="v56-visit-note v56-muted">未填写当时备注</p>'}${imageSrc(record.image) ? `<div class="v56-visit-photo">${imgTag(record.image, record.name)}</div>` : ''}<div class="v56-visit-actions"><button type="button" data-action="edit-sighting" data-id="${esc(record.id)}">编辑这次发现</button>${osm ? `<a href="${osm}" target="_blank" rel="noopener noreferrer">查看地点 ↗</a>` : ''}</div></article>`;
+      return `<article class="v56-visit"><div class="v56-visit-top"><span class="v56-dot" aria-hidden="true"></span><b>${esc(datePretty(record.date))}</b><span class="v56-place-pill">${ico('pin', 13)} ${esc(record.location || '地点未记录')}</span>${index === records.length - 1 ? '<span class="v56-first-pill">首次发现</span>' : ''}</div>${note ? `<p class="v56-visit-note">${esc(note)}</p>` : '<p class="v56-visit-note v56-muted">未填写当时备注</p>'}${photos.length ? `<p class="v57-photo-count">${photos.length} 张照片</p><div class="v57-visit-photos">${photos.map((photo, photoIndex) => `<button class="v56-visit-photo" type="button" data-action="v57-view-photo" data-id="${esc(record.id)}" data-index="${photoIndex}" aria-label="查看${esc(record.name)}第 ${photoIndex + 1} 张照片">${imgTag(photo, record.name)}</button>`).join('')}</div>` : ''}<div class="v56-visit-actions"><button type="button" data-action="edit-sighting" data-id="${esc(record.id)}">编辑这次发现</button>${osm ? `<a href="${osm}" target="_blank" rel="noopener noreferrer">查看地点 ↗</a>` : ''}</div></article>`;
     }).join('');
-    modal('发现档案 · ' + first.name, `<div class="v56-record-page"><div class="v56-record-cover">${imgTag(cover, first.name)}<span>发现档案 · FIELD NOTES</span></div><div class="v56-record-head"><div><h2>${esc(first.name)}</h2><p class="latin">${esc(group.latin || '学名尚待核实')}</p></div><strong>${records.length} 次发现</strong></div><div class="v56-record-stats"><span>观察次数 <b>${records.length}</b></span><span>记录地点 <b>${locationRows.filter(place => place.name !== '未记录地点').length}</b></span></div><section class="v56-observation"><div class="v56-section-title"><h3>观察足迹</h3><span>按地点汇总</span></div><div class="v56-place-list">${placeCards}</div></section>${mapSection(records, recordMapId, '发现足迹地图')}<section class="v56-timeline"><div class="v56-section-title"><h3>发现记录</h3><span>备注与照片按日期排列</span></div>${timeline}</section><div class="v56-record-actions"><button class="outlined-btn" type="button" data-action="v56-add-record" data-id="${esc(first.id)}">＋ 添加记录</button><button class="primary-btn" type="button" data-action="v56-open-guide" data-id="${esc(first.id)}">了解植物百科 →</button></div></div>`);
+    modal('发现档案 · ' + first.name, `<div class="v56-record-page"><div class="v56-record-cover">${imgTag(cover, first.name)}<span>发现档案 · FIELD NOTES</span></div><div class="v56-record-head"><div><h2>${esc(first.name)}</h2><p class="latin">${esc(group.latin || '学名尚待核实')}</p></div><strong>${records.length} 次发现</strong></div><div class="v56-record-stats"><span>观察次数 <b>${records.length}</b></span><span>记录地点 <b>${locationRows.filter(place => place.name !== '未记录地点').length}</b></span></div><section class="v56-observation"><div class="v56-section-title"><h3>观察足迹</h3><span>按地点汇总</span></div><div class="v56-place-list">${placeCards}</div></section>${mapSection(records, recordMapId, '发现足迹地图')}<section class="v56-timeline"><div class="v56-section-title"><h3>发现记录</h3><span>备注与照片按日期排列</span></div>${timeline}</section><div class="v56-record-actions"><button class="outlined-btn" type="button" data-action="v56-add-plant" data-id="${esc(first.id)}">＋ 加入我的植物</button><button class="outlined-btn" type="button" data-action="v56-add-record" data-id="${esc(first.id)}">＋ 添加记录</button><button class="primary-btn" type="button" data-action="v56-open-guide" data-id="${esc(first.id)}">了解植物百科 →</button></div></div>`);
     document.querySelector('#modal-root .modal')?.classList.add('v56-record-modal');
     mountMap(recordMapId, records);
   };
 
-  function guideKey(group) { return (group.latin ? 'latin:' + group.latin : 'name:' + group.first.name).trim().toLowerCase(); }
+  function guideKey(group) { return encyclopedia.keyFor({ name: group.first.name, latin: group.latin }); }
   function guideContent(entry) {
     const root = document.createElement('div');
     root.innerHTML = encyclopedia.guide(entry, '', false);
@@ -146,33 +151,59 @@
     return root.innerHTML;
   }
 
-  async function openGuide(id, refresh = false) {
-    destroyMap(recordMapId);
-    const group = groupFor(id);
-    if (!group) return;
-    const cover = group.records.find(record => imageSrc(record.image))?.image || '';
-    const key = guideKey(group), cached = state.encyclopediaEntries?.[key];
-    modal('植物百科 · ' + group.first.name, `<div class="v56-encyclopedia"><div class="v56-guide-cover">${imgTag(cover, group.first.name)}</div><div class="v56-guide-nav"><button type="button" class="outlined-btn" data-action="v56-back-record" data-id="${esc(id)}">← 返回发现档案</button><button type="button" class="outlined-btn" data-action="v56-refresh-guide" data-id="${esc(id)}">更新百科</button></div><div id="v56-guide-content" aria-live="polite"></div></div>`);
-    document.querySelector('#modal-root .modal')?.classList.add('v56-record-modal', 'v56-guide-modal');
-    const target = document.getElementById('v56-guide-content');
-    if (cached && !refresh) {
-      try { target.innerHTML = guideContent(encyclopedia.validateEntry(cached)); return; } catch { /* stale cache: refresh */ }
-    }
-    target.innerHTML = '<p class="v54-loading" role="status">正在整理植物的形态、分布与养护知识…</p>';
-    try {
-      const result = await v2post('/api/ai', { mode: 'species', format: 'encyclopedia', plant: { name: group.first.name, latin: group.latin }, question: '请写这株植物的专业植物百科：说明植物学特征、分布、生境与具体养护原则；别名和重点术语需有依据。不要描述照片、用户观察或编造药效。' });
+  function generateGuide(group, key) {
+    if (pendingGuides.has(key)) return pendingGuides.get(key);
+    const pending = (async () => {
+      const result = await v2post('/api/ai', { mode: 'species', format: 'encyclopedia', plant: { name: group.first.name, latin: group.latin }, question: '请撰写正式植物百科文章，直接介绍植物学特征、分布、生境与养护方法。正文只写有依据的知识，不描述照片。' });
       const entry = encyclopedia.validateEntry(result.encyclopedia);
       if (group.latin && entry.latin) {
         const genusSpecies = value => value.toLowerCase().match(/^[a-z]+\s+[a-z-]+/)?.[0] || '';
         if (genusSpecies(group.latin) && genusSpecies(entry.latin) && genusSpecies(group.latin) !== genusSpecies(entry.latin)) throw Error('百科返回的学名与档案不一致，请先核对物种名称。');
       }
-      state.encyclopediaEntries = state.encyclopediaEntries && typeof state.encyclopediaEntries === 'object' ? state.encyclopediaEntries : {};
+      state.encyclopediaEntries = state.encyclopediaEntries && typeof state.encyclopediaEntries === 'object' && !Array.isArray(state.encyclopediaEntries) ? state.encyclopediaEntries : {};
       state.encyclopediaEntries[key] = entry;
       await save();
-      if (target.isConnected) target.innerHTML = guideContent(entry);
-    } catch (error) {
-      if (target.isConnected) target.innerHTML = `<p class="v2-ai-error" role="alert">${esc(error.message)}。可稍后点击“更新百科”重试。</p>`;
+      return entry;
+    })();
+    pendingGuides.set(key, pending);
+    pending.then(() => pendingGuides.delete(key), () => pendingGuides.delete(key));
+    return pending;
+  }
+
+  async function openGuide(id, refresh = false) {
+    destroyMap(recordMapId);
+    const group = groupFor(id);
+    if (!group) return;
+    const cover = group.records.flatMap(sightingPhotos)[0] || '';
+    const key = guideKey(group), cached = state.encyclopediaEntries?.[key];
+    modal('植物百科 · ' + group.first.name, `<div class="v56-encyclopedia"><div class="v56-guide-cover">${imgTag(cover, group.first.name)}</div><div class="v56-guide-nav"><button type="button" class="outlined-btn" data-action="v56-back-record" data-id="${esc(id)}">← 返回发现档案</button><button type="button" class="outlined-btn" data-action="v56-refresh-guide" data-id="${esc(id)}">更新百科</button></div><p class="v57-cache-state" id="v57-cache-state" role="status"></p><div id="v56-guide-content" aria-live="polite"></div></div>`);
+    document.querySelector('#modal-root .modal')?.classList.add('v56-record-modal', 'v56-guide-modal');
+    const target = document.getElementById('v56-guide-content');
+    const status = document.getElementById('v57-cache-state'), refreshButton = document.querySelector('[data-action="v56-refresh-guide"]');
+    let hasCached = false;
+    if (cached) {
+      try {
+        target.innerHTML = guideContent(encyclopedia.validateEntry(cached)); hasCached = true;
+        status.textContent = '已保存在本机 · 点击“更新百科”才会重新生成';
+        if (!refresh) return;
+      } catch { /* invalid cache: generate once */ }
     }
+    if (!hasCached) target.innerHTML = '<p class="v54-loading" role="status">正在整理植物的形态、分布与养护知识…</p>';
+    status.textContent = hasCached ? '正在更新，完成后自动保存…' : '首次生成后会自动保存在本机';
+    refreshButton.disabled = true;
+    try {
+      const entry = await generateGuide(group, key);
+      if (target.isConnected) {
+        target.innerHTML = guideContent(entry);
+        status.textContent = '已保存在本机 · 点击“更新百科”才会重新生成';
+      }
+    } catch (error) {
+      if (target.isConnected) {
+        status.textContent = hasCached ? '更新未完成，已保存的百科仍可阅读' : '生成未完成，可点击“更新百科”重试';
+        const message = `<p class="v2-ai-error" role="alert">${esc(error.message)}</p>`;
+        if (hasCached) target.insertAdjacentHTML('afterbegin', message); else target.innerHTML = message;
+      }
+    } finally { if (refreshButton.isConnected) refreshButton.disabled = false; }
   }
 
   const oldAct = act;
@@ -181,6 +212,15 @@
     if (action === 'v56-add-record') {
       const group = groupFor(id);
       if (group) { destroyMap(recordMapId); sightingForm(null, { name: group.first.name, latin: group.latin }); }
+      return;
+    }
+    if (action === 'v56-add-plant') {
+      const group = groupFor(id);
+      if (group) {
+        destroyMap(recordMapId);
+        plantForm(null, { name: group.first.name, latin: group.latin, image: group.records.flatMap(sightingPhotos)[0] || '' });
+        document.querySelector('#modal-root .modal-header h2').textContent = '加入我的植物';
+      }
       return;
     }
     if (action === 'v56-open-guide') return openGuide(id);

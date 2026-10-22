@@ -31,8 +31,8 @@ recognizeView=function(){
  if(open)ai.innerHTML=`<div class="v53-panel-top"><div><span>DEEPSEEK · AI IDENTIFICATION</span><h2>用照片，进一步了解它。</h2></div><button type="button" data-action="v53-close-deepseek" class="v52-fold-btn" aria-label="收起 AI 识别">收起 <span aria-hidden="true">⌃</span></button></div>
  <div class="v53-ai-body">
   <section class="v53-ai-photo"><div class="v53-step">01 · 植物照片 <small>上传一张清晰照片</small></div>
-   <div class="v53-ai-photo-frame" id="v2-ai-photo-preview">${pic||`<div class="v53-photo-placeholder"><span class="v53-photo-icon">${v50Icon('camera',30)}</span><strong>拍照或选择图片</strong><small>全株、叶片、花果均可</small></div>`}</div>
-   <div class="v53-ai-photo-actions"><label for="v2-ai-image" class="outlined-btn v53-upload-label">${v50Icon('plus',17)} 选择照片</label><span class="v53-file-name" id="v53-file-label">${pic?'已选择一张照片':'尚未选择照片'}</span><input type="file" id="v2-ai-image" accept="image/*" aria-label="选择要分析的植物照片"></div>
+   <div class="v53-ai-photo-frame v57-photo-picker"><div id="v2-ai-photo-preview" class="v57-photo-preview">${pic||`<div class="v53-photo-placeholder"><span class="v53-photo-icon">${v50Icon('camera',30)}</span><strong>拍一张植物照片</strong><small>全株、叶片、花果均可</small></div>`}</div><button type="button" class="outlined-btn v53-upload-label" data-action="v57-pick-deepseek">${v50Icon('plus',17)} 选择照片</button><input type="file" id="v2-ai-image" accept="image/*" aria-label="选择要分析的植物照片" hidden></div>
+   <div class="v53-ai-photo-actions"><span class="v53-file-name" id="v53-file-label">${pic?'已选择一张照片':'尚未选择照片'}</span></div>
   </section>
   <section class="v53-ai-question"><div class="v53-step">02 · 补充问题 <small>可以选一个问题，也可以自己输入</small></div>
    <div class="v53-suggestions">${prompts.map(x=>`<button type="button" data-action="v48-ai-prompt" data-value="${esc(x)}">${esc(x)}</button>`).join('')}</div>

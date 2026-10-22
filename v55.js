@@ -118,7 +118,7 @@
       const step = photo.querySelector('.v53-step');
       if (step) step.innerHTML = '植物照片 <small>拍摄或选择一张清晰照片</small>';
       const note = question.querySelector('.v53-ai-note');
-      if (note) { note.textContent = '点击「开始 AI 识别」后才会发送照片；候选物种与百科草稿仍需核对。'; photo.append(note); }
+      if (note) { note.textContent = '选择清晰的植物照片，点击「开始 AI 识别」即可了解名称与植物百科。'; photo.append(note); }
       const run = question.querySelector('#v2-ai-run');
       if (run) photo.append(run);
       question.remove();

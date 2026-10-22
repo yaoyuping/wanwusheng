@@ -12,7 +12,7 @@ const yiyuPriorAction = act;
 function yiyuFullPhotoCount(data) {
   const list = [];
   (data.plants || []).forEach(p => {list.push(p.image);(p.logs || []).forEach(l=>list.push(l.image));});
-  (data.sightings || []).forEach(s => list.push(s.image || s.photo));
+  (data.sightings || []).forEach(s => list.push(...(Array.isArray(s.images) ? s.images : [s.image || s.photo])));
   return {embedded:list.filter(x=>typeof x==='string' && /^data:image\/(?:png|jpeg|webp);base64,/i.test(x)).length,
           linked:list.filter(x=>typeof x==='string' && x && !/^data:image\/(?:png|jpeg|webp);base64,/i.test(x)).length};
 }

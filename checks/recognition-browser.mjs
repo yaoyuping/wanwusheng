@@ -8,7 +8,7 @@ const base = process.env.YIYU_TEST_URL || 'http://127.0.0.1:8000/';
 import assert from 'node:assert/strict';
 import { mkdirSync } from 'node:fs';
 
-const sample = { name: '银杏（候选）', latin: 'Ginkgo biloba', family: 'Ginkgoaceae', genus: 'Ginkgo', summary: '植物概述 <img src=x onerror="window.injected=true"> 需实物核对。', evidence: '扇形叶与二叉叶脉可作为核对线索。', uncertain: true, sections: { morphology: '扇形叶，叶脉二叉分枝。', distribution: '按可靠资料核对分布与生境。', cultivation: '根据所在地气候和植株状况观察养护。', uses: '观赏价值需结合已确认物种说明。', culture: '文化资料需要查证来源。', similar: '对照叶片、花果和枝条确认近种差异。' } };
+const sample = { name: '银杏', latin: 'Ginkgo biloba', family: 'Ginkgoaceae', genus: 'Ginkgo', summary: '植物概述 <img src=x onerror="window.injected=true"> 需实物核对。', evidence: '扇形叶与二叉叶脉可作为核对线索。', uncertain: false, sections: { morphology: '扇形叶，叶脉二叉分枝。', distribution: '按可靠资料核对分布与生境。', cultivation: '根据所在地气候和植株状况观察养护。', uses: '观赏价值需结合已确认物种说明。', culture: '文化资料需要查证来源。', similar: '对照叶片、花果和枝条确认近种差异。' } };
 const imagePath = join(root, 'icon-192.png');
 const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH || '/usr/bin/chromium', headless: true, args: ['--no-sandbox'] });
 mkdirSync(output, { recursive: true });
@@ -47,7 +47,7 @@ try {
     assert.equal(await form.locator('[name="name"]').inputValue(), sample.name);
     assert.equal(await form.locator('[name="latin"]').inputValue(), sample.latin);
     assert.equal(await form.locator('#sighting-preview img').count(), 1);
-    for (const heading of ['形态特征', '分布与生境', '栽培技术', '主要价值', '植物文化', '近种区别']) assert.ok((await form.locator('[name="notes"]').inputValue()).includes(`【${heading}】`));
+    assert.equal(await form.locator('[name="notes"]').inputValue(), '');
     const savedName = `浏览器测试-${device}`;
     await form.locator('[name="name"]').fill(savedName);
     await form.locator('[type="submit"]').click();
@@ -62,6 +62,7 @@ try {
     assert.equal(await page.locator('#modal-root .v54-guide').count(), 0);
     await page.locator('[data-action="v56-open-guide"]').click();
     await page.locator('#v56-guide-content .v54-chapters').waitFor();
+    assert.equal(requests.filter(request => request.mode === 'species').length, 0, 'saved recognition article is reused without a second generation');
     assert.equal(await page.locator('#modal-root .v54-chapters > details').count(), 6);
     assert.ok(await page.locator('#modal-root .v54-guide').innerText().then(s => s.includes('扇形叶')));
     assert.ok((await page.locator('#modal-root .v54-summary').innerText()).includes('植物概述'));
@@ -89,7 +90,7 @@ try {
     await page.locator('#sighting-form [type="submit"]').click();
     await page.waitForFunction(name => state.sightings.some(s => s.name === name), `Pl@ntNet测试-${device}`);
     await page.waitForFunction(() => !document.getElementById('sighting-form'));
-    assert.ok(await page.evaluate(() => state.sightings.every(s => s.image && s.notes.includes('【近种区别】'))));
+    assert.ok(await page.evaluate(() => state.sightings.every(s => s.image && s.images.length === 1) && Boolean(state.encyclopediaEntries['latin:ginkgo biloba'])));
     await page.locator('[data-action="v51-deepseek-identify"]').click();
     await page.locator('#v2-ai-image').setInputFiles(imagePath);
     await page.waitForFunction(() => Boolean(ui.aiImage) && !document.getElementById('v2-ai-run')?.disabled);
@@ -100,7 +101,7 @@ try {
     assert.equal(await page.evaluate(() => state.sightings.length), 2);
     assert.deepEqual(errors, []);
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), `${device} must not overflow horizontally`);
-    results.push({ device, savedRecords: 2, chapters: 6, persistedAfterReload: true, candidateSave: true, incompleteResponseRejected: true, pageErrors: errors.length });
+    results.push({ device, savedRecords: 2, chapters: 6, persistedAfterReload: true, recognitionSave: true, incompleteResponseRejected: true, pageErrors: errors.length });
     await context.close();
   }
   console.log(JSON.stringify(results, null, 2));

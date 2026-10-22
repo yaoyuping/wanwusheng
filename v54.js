@@ -19,12 +19,12 @@
   function guide(entry, actions = '', showEvidence = true) {
     const taxonomy = [entry.family, entry.genus].filter(Boolean).join(' · ');
     return `<article class="v54-guide" aria-label="植物百科介绍">
-      <header class="v54-guide-head"><span class="v54-guide-kicker">BOTANICAL ENCYCLOPEDIA · 植物百科</span><h3>${esc(entry.name)}</h3>${entry.latin ? `<p class="latin">${esc(entry.latin)}</p>` : ''}${entry.aliases?.length ? `<div class="v54-aliases">${entry.aliases.map(alias => `<span>${esc(alias)}</span>`).join('')}</div>` : ''}${taxonomy ? `<p>${esc(taxonomy)}</p>` : ''}<span class="v54-draft-label">${entry.uncertain ? '物种尚待确认 · AI 草稿' : '候选识别 · AI 草稿'}</span></header>
+      <header class="v54-guide-head"><span class="v54-guide-kicker">BOTANICAL ENCYCLOPEDIA · 植物百科</span><h3>${esc(entry.name)}</h3>${entry.latin ? `<p class="latin">${esc(entry.latin)}</p>` : ''}${entry.aliases?.length ? `<div class="v54-aliases">${entry.aliases.map(alias => `<span>${esc(alias)}</span>`).join('')}</div>` : ''}${taxonomy ? `<p>${esc(taxonomy)}</p>` : ''}</header>
       ${entry.summary ? `<p class="v54-summary">${highlighted(entry.summary, entry.keywords)}</p>` : ''}
       ${entry.keywords?.length ? `<div class="v54-keywords"><small>重点词</small>${entry.keywords.map(word => `<span>${esc(word)}</span>`).join('')}</div>` : ''}
-      ${showEvidence && entry.evidence ? `<details class="v54-evidence"><summary>识别依据与核对建议</summary><p>${esc(entry.evidence)}</p></details>` : ''}
+      ${showEvidence && entry.evidence ? `<details class="v54-evidence"><summary>识别特征</summary><p>${esc(entry.evidence)}</p></details>` : ''}
       <div class="v54-chapters">${chapters.map(([key, title], index) => `<details ${index === 0 ? 'open' : ''}><summary><span>${String(index + 1).padStart(2, '0')}</span>${title}</summary><p>${highlighted(entry.sections[key], entry.keywords)}</p></details>`).join('')}</div>
-      <p class="v54-guide-notice">AI 生成内容需核对，候选名称不等同于物种鉴定。保存前可修改名称和学名。</p>${actions ? `<div class="v54-guide-actions">${actions}</div>` : ''}</article>`;
+      ${actions ? `<div class="v54-guide-actions">${actions}</div>` : ''}</article>`;
   }
 
   function validateEntry(value) {
@@ -32,10 +32,6 @@
     const text = (v, limit = 1200) => typeof v === 'string' ? v.trim().slice(0, limit) : '';
     const terms = (items, limit) => Array.isArray(items) ? [...new Set(items.filter(item => typeof item === 'string').map(item => text(item, 32)).filter(Boolean))].slice(0, limit) : [];
     return { name: text(value.name, 100), latin: text(value.latin, 180), family: text(value.family, 100), genus: text(value.genus, 100), aliases: terms(value.aliases, 6), keywords: terms(value.keywords, 8), summary: text(value.summary), evidence: text(value.evidence), uncertain: value.uncertain !== false, sections: Object.fromEntries(chapters.map(([key]) => [key, text(value.sections[key])])) };
-  }
-
-  function notesFor(entry, source) {
-    return [marker, `来源：${source} · AI 生成，需核实`, '识别候选，保存不代表已确认物种。', `【别名】\n${(entry.aliases || []).join('、')}`, `【重点词】\n${(entry.keywords || []).join('、')}`, `【科属信息】\n科：${entry.family || '待核实'}\n属：${entry.genus || '待核实'}`, `【概述】\n${entry.summary || ''}`, `【识别依据与核对】\n${entry.evidence || ''}`, ...chapters.map(([key, title]) => `【${title}】\n${entry.sections[key]}`)].join('\n\n');
   }
 
   function savedGuide(sighting) {
@@ -56,8 +52,8 @@
 
   function addToAtlas(value) {
     if (!value) return toast('请先完成识别');
-    const { entry, image, source } = value;
-    sightingForm(null, { name: entry.name, latin: entry.latin || '', image: image || '', notes: entry.sections ? notesFor(entry, source) : `${source} 识别候选，需结合实物核对。${entry.evidence || ''}` });
+    const { entry, image } = value;
+    sightingForm(null, { name: entry.name, latin: entry.latin || '', image: image || '', notes: '', encyclopedia: entry.sections ? entry : null });
     const title = document.querySelector('#modal-root h2');
     if (title) title.textContent = '加入植物图鉴';
     const submit = document.querySelector('#sighting-form [type="submit"]');
@@ -72,7 +68,7 @@
     const box = document.getElementById('v2-ai-result'), button = document.getElementById('v2-ai-run'), input = document.getElementById('v2-ai-image');
     if (!box || !button || button.disabled) return;
     const token = ++requestId, image = ui.aiImage;
-    const question = '请根据这张照片识别可能的植物，并整理六章节植物百科；不确定时指出需要核对的特征。';
+    const question = '请识别这张照片中的植物，按正式百科文章的语气整理六章节植物知识与养护方法。';
     current = null; button.disabled = true; if (input) input.disabled = true;
     box.innerHTML = '<p class="v54-loading" role="status">正在辨认照片并整理六章节植物百科…</p>';
     ui.v53AIAnswer = box.innerHTML;
@@ -80,6 +76,7 @@
       const result = await v2post('/api/ai', { mode: 'identify', format: 'encyclopedia', plant: {}, question, image });
       if (token !== requestId || ui.aiImage !== image) return;
       const entry = validateEntry(result.encyclopedia);
+      if (entry.uncertain) throw Error('照片细节不足，请补拍叶片、花或果实特写后重试。');
       current = { entry, image, source: result.model || 'DeepSeek' };
       ui.v53AIAnswer = guide(entry, '<button type="button" class="primary-btn" data-action="v54-add-ai">＋ 加入植物图鉴</button>');
       if (box.isConnected) box.innerHTML = ui.v53AIAnswer;
@@ -124,20 +121,20 @@
     if (!result) return null;
     const latin = v453Latin(result), name = v453DisplayName(result), key = latin || name;
     const entry = plantGuides.get(key) || { name, latin, evidence: 'Pl@ntNet 候选结果，匹配分数不是鉴定准确率。' };
-    return { entry, image: ui.recognitionImage || '', source: plantGuides.has(key) ? 'Pl@ntNet 候选 · DeepSeek 百科草稿' : 'Pl@ntNet', key };
+    return { entry, image: ui.recognitionImage || '', source: plantGuides.has(key) ? 'Pl@ntNet · DeepSeek' : 'Pl@ntNet', key };
   }
 
   async function showPlantnetGuide(index) {
     const value = plantnetValue(index); if (!value) return;
-    modal('植物百科 · ' + value.entry.name, '<div id="v54-plantnet-guide" aria-live="polite"><p class="v54-loading">正在整理这株候选植物的六章节百科…</p></div>');
+    modal('植物百科 · ' + value.entry.name, '<div id="v54-plantnet-guide" aria-live="polite"><p class="v54-loading">正在整理植物百科…</p></div>');
     const target = document.getElementById('v54-plantnet-guide');
     try {
       if (!value.entry.sections) {
-        const result = await v2post('/api/ai', { mode: 'species', format: 'encyclopedia', plant: { name: value.entry.name, latin: value.entry.latin }, question: '请介绍这个尚待实物核对的识别候选，按六章节整理植物百科草稿。' });
+        const result = await v2post('/api/ai', { mode: 'species', format: 'encyclopedia', plant: { name: value.entry.name, latin: value.entry.latin }, question: '请按六章节撰写正式植物百科文章，直接介绍植物的专业知识与养护方法。' });
         value.entry = validateEntry(result.encyclopedia); plantGuides.set(value.key, value.entry);
       }
       if (target.isConnected) {
-        currentPlantGuide = { ...value, source: 'Pl@ntNet 候选 · DeepSeek 百科草稿' };
+        currentPlantGuide = { ...value, source: 'Pl@ntNet · DeepSeek' };
         target.innerHTML = guide(value.entry, '<button type="button" class="primary-btn" data-action="v54-add-open-guide">＋ 加入植物图鉴</button>');
       }
     } catch (error) { if (target.isConnected) target.innerHTML = `<p class="v2-ai-error" role="alert">${esc(error.message)}</p>`; }
@@ -172,5 +169,6 @@
     if (current && ui.aiImage !== current.image) { current = null; ui.v53AIAnswer = ''; }
     return previousRecognize();
   };
-  window.yiyuEncyclopedia = Object.freeze({ guide, savedGuide, validateEntry });
+  const keyFor = entry => (entry.latin?.trim() ? 'latin:' + entry.latin.trim() : 'name:' + String(entry.name || '').trim()).toLowerCase();
+  window.yiyuEncyclopedia = Object.freeze({ guide, savedGuide, validateEntry, keyFor });
 })();

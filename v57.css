@@ -1,0 +1,36 @@
+/* 万物生 v5.7 · 照片选择、观察相册与植物状态。 */
+.v57-photo-picker{position:relative;display:block!important}
+.v57-photo-preview{width:100%;height:100%;display:grid;place-items:center}
+.v57-photo-picker .v53-photo-placeholder{padding-bottom:70px}
+.v57-photo-picker .v53-upload-label{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);z-index:2;background:#fffef9ed!important;box-shadow:0 5px 18px #244b3b18;white-space:nowrap}
+.v57-photo-picker:has(img) .v53-upload-label{left:auto;right:13px;bottom:13px;transform:none}
+.v57-status-badge{position:absolute;top:11px;left:11px;max-width:calc(100% - 22px);padding:6px 10px;border-radius:99px;font-size:12px;font-weight:750;line-height:1.3;overflow-wrap:anywhere;box-shadow:0 3px 12px #28392b25}
+.v57-status-badge.is-ill{background:#fff1ed;color:#a53d2b;border:1px solid #f0c3b5}
+.v57-status-badge.needs-attention{background:#fff6d8;color:#805f0c;border:1px solid #e8d59c}
+.v57-status-badge.is-custom{background:#eaf2f5;color:#365c6c;border:1px solid #c9dce5}
+.plant-card .card-photo:has(.v57-status-badge) .card-tag{top:auto!important;bottom:10px!important}
+.v57-photo-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:5px 0 12px}
+.v57-photo-item{position:relative;height:125px;border-radius:13px;overflow:hidden;background:#edf3e9}
+.v57-photo-item img{width:100%;height:100%;object-fit:cover}
+.v57-photo-item button{position:absolute;right:5px;top:5px;width:30px;height:30px;display:grid;place-items:center;background:#213b2cdd;color:white;border:0;border-radius:50%;font-size:22px;line-height:1}
+.v57-photo-item>span{position:absolute;left:7px;bottom:6px;background:#173d2aba;color:white;border-radius:7px;padding:2px 6px;font-size:11px}
+.v57-no-photos{grid-column:1/-1;border:1px dashed #c6d8c6;border-radius:14px;padding:30px;text-align:center;color:#819381;font-size:13px}
+.v57-upload-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.v57-upload-status,.v57-photo-count,.v57-cache-state{font-size:12px;color:#7c9182;line-height:1.7}
+.v57-photo-count{margin:10px 0 4px}
+.v57-visit-photos{display:flex;flex-wrap:wrap;gap:9px;margin:0 0 14px}
+.v57-visit-photos .v56-visit-photo{border:0;padding:0;margin:0;cursor:zoom-in}
+.v57-cache-state{padding:10px 12px;border-radius:12px;background:#f1f6ee}
+.v56-record-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.v56-record-actions button{min-width:0!important}
+.v57-lightbox{position:fixed;inset:0;z-index:500;display:grid;place-items:center;padding:22px}
+.v57-lightbox-shade{position:absolute;inset:0;border:0;background:#112119ee;width:100%;height:100%}
+.v57-lightbox-body{position:relative;width:min(100%,1000px);max-height:100%;display:flex;flex-direction:column;align-items:center}
+.v57-lightbox-close{position:absolute;right:0;top:0;z-index:2;border:1px solid #ffffff66;background:#18392bd9;color:#fff;font-size:28px;line-height:1;width:42px;height:42px;border-radius:50%}
+.v57-lightbox-image{display:grid;place-items:center;width:100%;min-height:0}
+.v57-lightbox-image img{display:block;max-width:100%;max-height:calc(100dvh - 140px);object-fit:contain;border-radius:12px}
+.v57-lightbox-controls{display:flex;justify-content:center;align-items:center;gap:22px;color:#fff;margin-top:18px}
+.v57-lightbox-controls button{border:1px solid #ffffff44;border-radius:99px;background:#ffffff12;color:#fff;padding:9px 15px;font-size:13px}
+.v57-lightbox-controls button:disabled{opacity:.3;cursor:default}
+@media(max-width:800px){.bottom-nav{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
+@media(max-width:620px){.v57-photo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.v57-photo-picker .v53-photo-placeholder{gap:6px;padding-bottom:54px}.v57-photo-picker .v53-photo-icon{width:48px;height:48px}.v57-photo-picker .v53-upload-label{bottom:12px;min-height:37px;padding:7px 13px!important}.v56-record-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.v56-record-actions [data-action="v56-open-guide"]{grid-column:1/-1}.v57-status-badge{top:8px;left:8px;font-size:11px;padding:5px 8px}.v57-lightbox{padding:13px}.v57-lightbox-controls{gap:14px}.v57-visit-photos .v56-visit-photo{width:calc(50% - 5px);height:112px}}
