@@ -1,0 +1,16 @@
+.v59-delete{flex-shrink:0;border:1px solid #ecd8cd;border-radius:99px;background:#fff8f3;color:#a36b55;font-size:11px;min-height:38px;padding:7px 11px;cursor:pointer}
+.v59-delete:hover{background:#fbece4;border-color:#d5a68f}
+.v3-log-header{align-items:center;gap:9px}
+.v3-log-header .v59-delete{margin-left:5px;min-height:34px;padding:5px 10px}
+.v2-agenda-entry{gap:9px;flex-wrap:wrap}
+.v2-agenda-entry>div{min-width:80px;overflow-wrap:anywhere}
+.v59-undo{display:flex;align-items:center;gap:16px;pointer-events:auto}
+.v59-undo button{border:1px solid #ffffff6b;border-radius:99px;background:#ffffff15;padding:5px 13px;color:#fff;font:inherit;font-weight:750;white-space:nowrap;cursor:pointer}
+@media(max-width:620px){.v59-delete{min-height:40px;padding:8px 11px}.v3-log-header{flex-wrap:wrap}.v3-log-header>b{flex:1}.v3-log-header .v59-delete{margin-left:0}.v2-agenda-entry .v2-text-button{min-height:40px}}
+.v59-push-panel{margin-bottom:20px}
+.v59-push-panel h2{font-size:21px;margin:0 0 12px;color:#315b42}
+.v59-push-panel p{font-size:12px;color:#7d9180;line-height:1.8}
+.v59-push-panel .setting-actions{margin:16px 0;gap:9px}
+.v59-push-install{padding:13px 15px;border-radius:13px;background:#edf4e7;color:#537455!important}
+#v59-push-status{padding:11px 13px;background:#f3f7ee;border-radius:12px;color:#4e7659}
+@media(max-width:620px){.v59-push-panel .setting-actions>button{min-height:44px;font-size:12px}}

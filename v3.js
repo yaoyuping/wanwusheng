@@ -74,7 +74,7 @@ const v3Fields=[
 ];
 function v3FieldValue(p,key){switch(key){
  case 'status':return p.status||'未记录';case 'name':return p.name||'未命名植物';case 'acquired':return p.acquired?`${p.acquired.slice(0,4)}年${Number(p.acquired.slice(5,7))}月${Number(p.acquired.slice(8,10))}日`:'未设置';
- case 'tags':return p.tags||'未设置';case 'interval':return (p.interval||7)+'天（到期检查盆土）';case 'reminder':return p.reminder===false?'关闭':'开启站内检查';case 'price':return p.price?`¥${p.price}`:'未记录';default:return p[key]||'未设置';
+ case 'tags':return p.tags||'未设置';case 'interval':return (p.interval||7)+'天（到期检查盆土）';case 'reminder':return p.reminder===false?'关闭':'开启养护检查';case 'price':return p.price?`¥${p.price}`:'未记录';default:return p[key]||'未设置';
 }}
 function v3ProfileInfo(p){return `<section class="v3-info-card" aria-label="植物基本信息">${v3Fields.map(([label,key,icon,toned,editable])=>`<${editable?'button':'div'} class="v3-info-row" ${editable?`type="button" data-action="edit-plant" data-id="${esc(p.id)}"`:''}><span class="v3-info-icon ${toned}" aria-hidden="true">${icon}</span><span class="v3-info-value"><small>${label}</small><strong>${esc(v3FieldValue(p,key))}</strong></span>${editable?`<span class="v3-info-arrow" aria-hidden="true">${ico('back',19)}</span>`:''}</${editable?'button':'div'}>`).join('')}</section>${p.notes?`<section class="v3-profile-notes"><div class="v3-note-head">植物手记 <span>PERSONAL NOTES</span></div><p>${esc(p.notes)}</p></section>`:''}`}
 function v3LogCard(l){const sym=V2_TYPES[l.action]?.[0]||'✎';const weather=[l.weather,l.temperature,l.humidity].filter(Boolean).map(esc).join(' · ');
@@ -108,7 +108,7 @@ plantForm=function(pid=null,prefill={}){
  v3BeforePlantForm(pid,prefill);const p=state.plants.find(x=>x.id===pid)||prefill;
  const form=$('#plant-form');if(!form)return;
  const tagsField=document.createElement('div');tagsField.className='field';tagsField.innerHTML=`<label for="v3-tags">植物标签</label><input id="v3-tags" name="tags" maxlength="120" placeholder="例如：中古盆栽 / 喜湿" value="${esc(p.tags||'')}">`;
- const reminderField=document.createElement('div');reminderField.className='field';reminderField.innerHTML=`<label for="v3-reminder">养护待检查</label><select id="v3-reminder" name="reminder"><option value="yes" ${p.reminder===false?'':'selected'}>开启（仅站内显示）</option><option value="no" ${p.reminder===false?'selected':''}>关闭</option></select>`;
+ const reminderField=document.createElement('div');reminderField.className='field';reminderField.innerHTML=`<label for="v3-reminder">养护待检查</label><select id="v3-reminder" name="reminder"><option value="yes" ${p.reminder===false?'':'selected'}>开启养护提醒</option><option value="no" ${p.reminder===false?'selected':''}>关闭</option></select>`;
  const grid=form.querySelector('.form-grid');if(grid){grid.append(tagsField,reminderField)}
  const head=document.querySelector('.modal-header h2');if(head)head.textContent=pid?'编辑 · '+(p.name||'我的植物'):'新植物入驻';
  document.querySelector('#modal-root .modal')?.classList.add('v3-editor-modal');
