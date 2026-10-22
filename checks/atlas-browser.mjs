@@ -18,6 +18,7 @@ try {
     const page = await context.newPage(), errors = []; let guideRequests = 0;
     page.on('pageerror', error => errors.push(error.message));
     await page.route('https://tile.openstreetmap.org/**', route => route.fulfill({ body: tile, contentType: 'image/png' }));
+    await page.route('https://*.basemaps.cartocdn.com/**', route => route.fulfill({ body: tile, contentType: 'image/png' }));
     await page.route('**/api/status', route => route.fulfill({ json: { ready: true, deepseek: true, species: true } }));
     await page.route('**/api/ai', route => {
       guideRequests++;

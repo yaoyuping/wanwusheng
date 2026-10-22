@@ -10,6 +10,7 @@ function sightingPhotos(record) {
   const maps = new Map();
   const searchStates = new WeakMap();
   const searchMarkers = new WeakMap();
+  const mapFits = new WeakMap();
   const pendingGuides = new Map();
   const observationMarker = '【AI 植物百科草稿】';
 
@@ -53,7 +54,7 @@ function sightingPhotos(record) {
 
   function mapSection(records, id, title) {
     const located = records.filter(record => coordinate(record));
-    return `<section class="v56-map-section" aria-label="${esc(title)}"><div class="v56-section-title"><h3>${esc(title)}</h3><span>${located.length} 个有坐标的记录</span></div>${searchBox(id)}<div class="v56-map" id="${id}" role="region" aria-label="${esc(title)}地图"></div>${located.length ? '' : '<p class="v56-map-empty">还没有带坐标的发现记录。搜索地点后，可在地图上添加一次发现。</p>'}<p class="v56-map-credit">地图数据 © OpenStreetMap contributors · 搜索地点后可选择位置并记录发现。</p></section>`;
+    return `<section class="v56-map-section v583-map-section" aria-label="${esc(title)}"><div class="v56-section-title"><div><h3>${esc(title)}</h3><span>${located.length} 次发现已留下足迹</span></div><button type="button" class="v583-map-fit" data-action="v583-map-fit" data-map="${id}">${ico('pin', 14)} 查看全部足迹</button></div>${searchBox(id)}<div class="v56-map v583-map" id="${id}" role="region" aria-label="${esc(title)}地图"></div>${located.length ? '' : '<p class="v56-map-empty">还没有带坐标的发现记录。搜索地点后，可在地图上添加一次发现。</p>'}<p class="v583-map-state" role="status" aria-live="polite"></p><p class="v56-map-credit"><span class="v583-map-dot" aria-hidden="true"></span>绿色标记记录植物相遇，点击可查看地点与发现次数。</p></section>`;
   }
 
   function searchBox(mapId) {
@@ -70,9 +71,23 @@ function sightingPhotos(record) {
     const container = document.getElementById(id), located = records.filter(record => coordinate(record));
     if (!container) return;
     if (!window.L) { container.textContent = '地图暂时不可用；下方的地点记录仍可查看。'; return; }
-    const map = L.map(container, { scrollWheelZoom: false, zoomControl: true });
+    const map = L.map(container, { scrollWheelZoom: false, zoomControl: false });
     maps.set(id, map);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; OpenStreetMap contributors' }).addTo(map);
+    L.control.zoom({ position: 'topright', zoomInTitle: '放大地图', zoomOutTitle: '缩小地图' }).addTo(map);
+    const light = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { subdomains: 'abcd', maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener noreferrer">CARTO</a>' });
+    let failures = 0, usingFallback = false;
+    light.on('tileload', () => { failures = 0; });
+    light.on('tileerror', () => {
+      if (++failures < 3 || usingFallback || !container.isConnected || maps.get(id) !== map) return;
+      usingFallback = true;
+      map.removeLayer(light);
+      const fallback = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; OpenStreetMap contributors' });
+      const status = container.parentElement.querySelector('.v583-map-state');
+      status.textContent = '浅色底图暂不可用，已切换标准地图。';
+      fallback.on('tileerror', () => { status.textContent = '底图暂时无法加载，搜索地点和已有发现记录仍可使用。'; });
+      fallback.addTo(map);
+    });
+    light.addTo(map);
     const pins = new Map();
     for (const record of located) {
       const position = coordinate(record), key = position.map(value => value.toFixed(4)).join(',');
@@ -81,14 +96,17 @@ function sightingPhotos(record) {
     }
     for (const item of pins.values()) {
       const count = item.records.length;
-      const icon = L.divIcon({ className: 'v56-pin', html: `<span><b>${count}</b></span>`, iconSize: [35, 35], iconAnchor: [17, 35] });
+      const icon = L.divIcon({ className: 'v56-pin v583-pin', html: `<span><b>${count}</b></span>`, iconSize: [38, 38], iconAnchor: [19, 19] });
       const rows = item.records.slice(0, 8).map(record => `<div><b>${esc(record.name || '待确认植物')}</b> · ${esc(record.location || '未记录地点')}<small>${esc(record.date || '日期未记录')}</small></div>`).join('');
       L.marker(item.position, { icon }).addTo(map).bindPopup(`<div class="v56-map-popup">${rows}${count > 8 ? `<small>另有 ${count - 8} 条记录</small>` : ''}</div>`);
     }
     const bounds = located.map(record => coordinate(record));
-    if (!bounds.length) map.setView([35, 105], 4);
-    else if (bounds.length === 1) map.setView(bounds[0], 13);
-    else map.fitBounds(bounds, { padding: [28, 28], maxZoom: 13 });
+    const fit = () => {
+      if (!bounds.length) map.setView([35, 105], 4);
+      else if (bounds.length === 1) map.setView(bounds[0], 13);
+      else map.fitBounds(bounds, { padding: [38, 38], maxZoom: 13 });
+    };
+    mapFits.set(map, fit); fit();
     setTimeout(() => { if (container.isConnected && maps.get(id) === map) map.invalidateSize(); }, 80);
   }
 
@@ -102,7 +120,7 @@ function sightingPhotos(record) {
     }
     if (map) {
       const old = searchMarkers.get(map); if (old) old.remove();
-      const marker = L.marker([point.lat, point.lon]).addTo(map);
+      const marker = L.marker([point.lat, point.lon], { icon: L.divIcon({ className: 'v583-search-pin', html: `<span>${ico('pin', 19)}</span>`, iconSize: [42, 42], iconAnchor: [21, 42] }) }).addTo(map);
       searchMarkers.set(map, marker);
       map.setView([point.lat, point.lon], 16);
       if (!form) {
@@ -312,6 +330,14 @@ function sightingPhotos(record) {
   const oldAct = act;
   act = async function(action, element) {
     const id = element.dataset.id;
+    if (action === 'v583-map-fit') {
+      const map = maps.get(element.dataset.map);
+      if (map) {
+        searchMarkers.get(map)?.remove(); searchMarkers.delete(map); map.closePopup(); mapFits.get(map)?.();
+        element.closest('.v56-map-section').querySelector('.v58-search-state').textContent = '已返回全部发现足迹。';
+      }
+      return;
+    }
     if (action === 'v58-search-place') return searchPlace(element.closest('.v58-place-search'));
     if (action === 'v58-select-place') {
       const scope = element.closest('.v58-place-search'), point = searchStates.get(scope)?.results[Number(element.dataset.index)];

@@ -93,3 +93,33 @@
 
 /* Discovery maps are displayed on the atlas overview only. */
 #modal-root :is(.v56-map-section,.v56-map,.v2-map-frame){display:none!important}
+
+/* A quiet, light basemap for the discovery overview. */
+.v583-map-section{padding:22px;background:#fffef9;border:1px solid #e0e8dc;border-radius:25px;box-shadow:0 9px 30px #35553c08}
+.v583-map-section>.v56-section-title{align-items:center;margin-bottom:17px}
+.v583-map-section>.v56-section-title h3{padding:0;border:0;font-size:22px;letter-spacing:.02em}
+.v583-map-section>.v56-section-title span{display:block;margin-top:5px;font-size:11px;color:#8a9b8b}
+.v583-map-fit{display:inline-flex;align-items:center;justify-content:center;gap:5px;flex-shrink:0;padding:9px 12px;border:1px solid #dce7d9;border-radius:99px;background:#eff4eb;color:#477250;font-size:11px;font-weight:700;cursor:pointer}
+.v583-map-fit:hover{background:#e4efdf}
+.v583-map-section .v58-place-search>label{display:none}
+.v583-map-section .v58-search-line input{background:#f6f8f2;border-color:#e1e8dc;border-radius:14px}
+.v583-map-section .v58-search-line button{background:#315f46!important;color:#fff!important;border-color:#315f46!important;border-radius:14px!important}
+.v583-map-section .v583-map{height:370px;border-radius:19px;background:#edf1e9;box-shadow:inset 0 0 0 1px #dce5d7}
+.v583-map .leaflet-control-zoom{border:1px solid #e1e7dc!important;border-radius:13px!important;overflow:hidden;box-shadow:0 4px 17px #2e4c3520!important}
+.v583-map .leaflet-control-zoom a{width:35px;height:35px;line-height:35px;background:#fffef9;color:#496e50;border-color:#e5ecdf;font-size:20px;font-weight:400}
+.v583-map .leaflet-control-zoom a:hover{background:#edf4e7}
+.v583-map .leaflet-control-attribution{padding:3px 7px;background:#fffef9e8;border-radius:7px 0 0 0;color:#7e8d7d;font-size:9px}
+.v583-map .leaflet-control-attribution a{color:#638368}
+.v56-pin.v583-pin span{width:38px;height:38px;border-radius:50%;transform:none;background:#3c7655;border:3px solid #fffef9;font-size:13px;box-shadow:0 0 0 5px #3c76551b,0 4px 13px #23482e2b}
+.v56-pin.v583-pin b{transform:none}
+.v583-search-pin{background:transparent;border:0}
+.v583-search-pin>span{width:42px;height:42px;display:grid;place-items:center;border:3px solid #fffef9;border-radius:50% 50% 50% 6px;transform:rotate(-45deg);background:#315f46;color:#fff;box-shadow:0 4px 14px #294c353d}
+.v583-search-pin svg{transform:rotate(45deg)}
+.v583-map .leaflet-popup-content-wrapper{background:#fffef9;border:1px solid #e4eadf;border-radius:17px;box-shadow:0 7px 28px #35503a25}
+.v583-map .leaflet-popup-tip{background:#fffef9}
+.v583-map .leaflet-popup-close-button{color:#819781!important}
+.v583-map-state{margin:10px 1px 0;color:#7f8c73;font-size:11px;line-height:1.7}
+.v583-map-state:empty{display:none}
+.v583-map-section .v56-map-credit{display:flex;align-items:baseline;gap:7px;margin-top:12px;font-size:10px;color:#8c9c8a}
+.v583-map-dot{display:inline-block;flex-shrink:0;width:7px;height:7px;border-radius:50%;background:#3c7655}
+@media(max-width:620px){.v583-map-section{padding:15px;border-radius:22px}.v583-map-section>.v56-section-title{gap:8px}.v583-map-section>.v56-section-title h3{font-size:20px}.v583-map-fit{font-size:10px;padding:8px 9px}.v583-map-section .v583-map{height:300px;border-radius:16px}.v583-map-section .v58-search-line{flex-wrap:nowrap;gap:7px}.v583-map-section .v58-search-line input{flex-basis:0;padding:11px 10px;font-size:16px}.v583-map-section .v58-search-line button{width:auto;font-size:11px;padding:9px 12px!important}.v583-map-section .v56-map-credit{font-size:10px}}
