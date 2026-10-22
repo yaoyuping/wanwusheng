@@ -23,7 +23,7 @@ function yiyuBackupStats(data) {
     tags:(data.tagLibrary||[]).length,photos:photos.embedded,linkedPhotos:photos.linked};
 }
 function yiyuBackupValidRoot(o) {
-  if (!o || typeof o!=='object' || Array.isArray(o) || !Array.isArray(o.plants) || !Array.isArray(o.sightings)) throw Error('这不是有效的一隅植物档案备份');
+  if (!o || typeof o!=='object' || Array.isArray(o) || !Array.isArray(o.plants) || !Array.isArray(o.sightings)) throw Error('这不是有效的万物生植物档案备份');
   if (o.tasks!==undefined && !Array.isArray(o.tasks)) throw Error('养护待办结构无效');
   if(o.tagLibrary!==undefined && !Array.isArray(o.tagLibrary)) throw Error('标签库结构无效');
   if(o.plants.length>50000 || o.sightings.length>50000 || (o.tasks||[]).length>100000) throw Error('文件条目数量超出安全限制');
@@ -32,7 +32,7 @@ function yiyuBackupValidRoot(o) {
 }
 function yiyuStateSnapshot() {return JSON.parse(JSON.stringify(state));}
 function yiyuTimestamp() {return new Date().toISOString().replace(/[:.]/g,'-').replace('T','_').replace(/Z$/,'');}
-function yiyuBackupName(){return `一隅植物手记-完整备份-${yiyuTimestamp()}.json`;}
+function yiyuBackupName(){return `万物生-完整备份-${yiyuTimestamp()}.json`;}
 function yiyuReadableSize(n){return n<1024*1024?`${Math.ceil(n/1024)} KB`:`${(n/1024/1024).toFixed(1)} MB`;}
 async function yiyuSHA256(textValue){
   if(!globalThis.crypto?.subtle) return null;
@@ -78,7 +78,7 @@ async function yiyuExportOnly(){
 async function yiyuShareToFiles(){
  const {file}=await yiyuBuildFile();
  if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
-   try{await navigator.share({files:[file],title:'一隅 · 植物手记完整备份'});yiyuMarkBackup();
+   try{await navigator.share({files:[file],title:'万物生 · 完整备份'});yiyuMarkBackup();
      toast('请在分享菜单中选择“存储到文件”并选 iCloud Drive');}
    catch(e){if(e?.name==='AbortError')return; yiyuDownload(file);yiyuMarkBackup();toast('分享不可用，已改为下载备份文件');}
  }else{yiyuDownload(file);yiyuMarkBackup();toast('备份已下载，请通过文件 App 移入 iCloud Drive');}
