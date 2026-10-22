@@ -62,7 +62,8 @@
     if (!ui.aiImage) return toast('请先选择植物照片');
     const box = document.getElementById('v2-ai-result'), button = document.getElementById('v2-ai-run'), input = document.getElementById('v2-ai-image');
     if (!box || !button || button.disabled) return;
-    const token = ++requestId, image = ui.aiImage, question = document.getElementById('v2-ai-question')?.value.trim() || '';
+    const token = ++requestId, image = ui.aiImage;
+    const question = '请根据这张照片识别可能的植物，并整理六章节植物百科；不确定时指出需要核对的特征。';
     current = null; button.disabled = true; if (input) input.disabled = true;
     box.innerHTML = '<p class="v54-loading" role="status">正在辨认照片并整理六章节植物百科…</p>';
     ui.v53AIAnswer = box.innerHTML;

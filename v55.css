@@ -1,0 +1,14 @@
+/* 万物生 v5.5 · 自定义档案选项与单照片识别。 */
+.v55-custom-option{display:flex;gap:8px;align-items:center;margin-top:10px}
+.v55-custom-option input{flex:1;min-width:0}
+.v55-custom-option .outlined-btn{flex:0 0 auto;min-height:45px!important;padding:8px 12px!important;white-space:nowrap}
+.v55-tag-filters{display:flex;align-items:flex-start;gap:12px;margin-top:11px}
+.v55-tag-filters>span{flex:0 0 auto;padding-top:8px;color:#698574;font-size:12px;font-weight:700}
+.v55-tag-filters .filter-set{margin:0}
+#v52-plantnet-panel .v47-recognize-grid{grid-template-columns:minmax(0,1fr)!important}
+#v52-plantnet-panel .v47-upload-card{max-width:800px;width:100%;margin:0 auto}
+#v53-deepseek-panel .v53-ai-body{grid-template-columns:minmax(0,1fr)}
+#v53-deepseek-panel .v53-ai-photo{max-width:800px;width:100%;margin:0 auto;box-sizing:border-box}
+#v53-deepseek-panel .v53-ai-photo-frame{height:320px}
+#v53-deepseek-panel .v53-ai-note{margin:17px 0 13px}
+@media(max-width:620px){.v55-tag-filters{display:block}.v55-tag-filters>span{display:block;margin-bottom:6px}.v55-custom-option .outlined-btn{font-size:11px!important;padding:8px 10px!important}#v53-deepseek-panel .v53-ai-photo-frame{height:235px}}

@@ -32,9 +32,9 @@ try {
     const goToRecognition = async () => { await page.locator('[data-nav="recognize"]:visible').first().click(); };
     await goToRecognition();
     await page.locator('[data-action="v51-deepseek-identify"]').click();
+    assert.equal(await page.locator('#v53-deepseek-panel #v2-ai-question').count(), 0);
     await page.locator('#v2-ai-image').setInputFiles(imagePath);
     await page.waitForFunction(() => Boolean(ui.aiImage) && !document.getElementById('v2-ai-run')?.disabled);
-    await page.locator('#v2-ai-question').fill('这可能是什么植物？请比较相似种');
     await page.locator('#v2-ai-run').click();
     await page.locator('[data-action="v54-add-ai"]').waitFor();
     assert.equal(await page.locator('#v2-ai-result .v54-chapters > details').count(), 6);
@@ -67,6 +67,8 @@ try {
     await page.locator('#modal-root [data-action="close-modal"]').first().click();
     await goToRecognition();
     await page.locator('[data-action="v51-plantnet"]').click();
+    assert.equal(await page.locator('#v52-plantnet-panel .v47-recognize-side').count(), 0);
+    assert.equal(await page.locator('#v52-plantnet-panel .v453-capture').count(), 0);
     await page.locator('#recognize-photo').setInputFiles(imagePath);
     await page.waitForFunction(() => Boolean(ui.recognitionImage));
     await page.locator('[data-action="v52-identify-run"]:visible').first().click();
