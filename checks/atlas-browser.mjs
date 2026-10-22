@@ -43,7 +43,8 @@ try {
     await page.locator('.v56-group-card').filter({ hasText: '无患子' }).click();
     assert.equal(await page.locator('.v56-record-page .v56-visit').count(), 2);
     assert.equal(await page.locator('.v56-record-page .v56-place-card').count(), 2);
-    assert.equal(await page.locator('#v56-record-map .v56-pin').count(), 2);
+    assert.equal(await page.locator('.v56-record-page .v56-map-section').count(), 0);
+    assert.equal(await page.locator('#v56-atlas-map .v56-pin').count(), 3);
     assert.ok((await page.locator('.v56-record-page').innerText()).includes('第一次见到金黄的果实'));
     assert.equal(await page.locator('.v56-record-page .v54-guide').count(), 0);
     assert.equal(await page.locator('.v56-visit-note img').count(), 0);
@@ -78,7 +79,7 @@ try {
     assert.ok((await page.locator('.v56-record-page').innerText()).includes('看到了树上的新果实'));
     assert.deepEqual(errors, []);
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
-    console.log(`${device}: grouped sightings, atlas/group maps, add record, notes, separate guide, highlights and backup passed`);
+    console.log(`${device}: grouped sightings, overview map without a detail map, add record, notes, separate guide, highlights and backup passed`);
     await context.close();
   }
 } finally { await browser.close(); }

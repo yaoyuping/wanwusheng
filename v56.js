@@ -5,7 +5,7 @@ function sightingPhotos(record) {
 
 (() => {
   'use strict';
-  const atlasMapId = 'v56-atlas-map', recordMapId = 'v56-record-map';
+  const atlasMapId = 'v56-atlas-map';
   const encyclopedia = window.yiyuEncyclopedia;
   const maps = new Map();
   const searchStates = new WeakMap();
@@ -107,8 +107,7 @@ function sightingPhotos(record) {
       searchMarkers.set(map, marker);
       map.setView([point.lat, point.lon], 16);
       if (!form) {
-        const record = scope.dataset.map === recordMapId ? document.querySelector('.v56-record-actions [data-action="v56-add-record"]')?.dataset.id : '';
-        marker.bindPopup(`<div class="v58-map-choice"><b>${esc(point.name)}</b><button type="button" class="outlined-btn" data-action="v58-record-place" data-id="${esc(record || '')}" data-name="${esc(point.name)}" data-lat="${point.lat}" data-lon="${point.lon}">在这里添加记录</button></div>`).openPopup();
+        marker.bindPopup(`<div class="v58-map-choice"><b>${esc(point.name)}</b><button type="button" class="outlined-btn" data-action="v58-record-place" data-name="${esc(point.name)}" data-lat="${point.lat}" data-lon="${point.lon}">在这里添加记录</button></div>`).openPopup();
       }
     }
     scope.querySelector('.v58-search-state').textContent = form ? '地点与坐标已填入，可在地图上点选微调，再保存发现。' : '地图已移动到所选地点，可点击标记添加记录。';
@@ -248,7 +247,6 @@ function sightingPhotos(record) {
   };
 
   sightingDetail = function(id) {
-    destroyMap(recordMapId);
     const group = groupFor(id);
     if (!group) return;
     const { first, records } = group, cover = records.flatMap(sightingPhotos)[0] || '', locationRows = places(records);
@@ -258,9 +256,8 @@ function sightingPhotos(record) {
       const osm = point ? `https://www.openstreetmap.org/?mlat=${encodeURIComponent(point[0])}&mlon=${encodeURIComponent(point[1])}#map=16/${encodeURIComponent(point[0])}/${encodeURIComponent(point[1])}` : '';
       return `<article class="v56-visit"><div class="v56-visit-top"><span class="v56-dot" aria-hidden="true"></span><b>${esc(datePretty(record.date))}</b><span class="v56-place-pill">${ico('pin', 13)} ${esc(record.location || '地点未记录')}</span>${index === records.length - 1 ? '<span class="v56-first-pill">首次发现</span>' : ''}</div>${note ? `<p class="v56-visit-note">${esc(note)}</p>` : '<p class="v56-visit-note v56-muted">未填写当时备注</p>'}${photos.length ? `<p class="v57-photo-count">${photos.length} 张照片</p><div class="v57-visit-photos">${photos.map((photo, photoIndex) => `<button class="v56-visit-photo" type="button" data-action="v57-view-photo" data-id="${esc(record.id)}" data-index="${photoIndex}" aria-label="查看${esc(record.name)}第 ${photoIndex + 1} 张照片">${imgTag(photo, record.name)}</button>`).join('')}</div>` : ''}<div class="v56-visit-actions"><button type="button" data-action="edit-sighting" data-id="${esc(record.id)}">编辑这次发现</button>${osm ? `<a href="${osm}" target="_blank" rel="noopener noreferrer">查看地点 ↗</a>` : ''}</div></article>`;
     }).join('');
-    modal('发现档案 · ' + first.name, `<div class="v56-record-page"><div class="v56-record-cover">${imgTag(cover, first.name)}<span>发现档案 · FIELD NOTES</span></div><div class="v56-record-head"><div><h2>${esc(first.name)}</h2><p class="latin">${esc(group.latin || '学名尚待核实')}</p></div><strong>${records.length} 次发现</strong></div><div class="v56-record-stats"><span>观察次数 <b>${records.length}</b></span><span>记录地点 <b>${locationRows.filter(place => place.name !== '未记录地点').length}</b></span></div><section class="v56-observation"><div class="v56-section-title"><h3>观察足迹</h3><span>按地点汇总</span></div><div class="v56-place-list">${placeCards}</div></section>${mapSection(records, recordMapId, '发现足迹地图')}<section class="v56-timeline"><div class="v56-section-title"><h3>发现记录</h3><span>备注与照片按日期排列</span></div>${timeline}</section><div class="v56-record-actions"><button class="outlined-btn" type="button" data-action="v56-add-plant" data-id="${esc(first.id)}">＋ 加入我的植物</button><button class="outlined-btn" type="button" data-action="v56-add-record" data-id="${esc(first.id)}">＋ 添加记录</button><button class="primary-btn" type="button" data-action="v56-open-guide" data-id="${esc(first.id)}">了解植物百科 →</button></div></div>`);
+    modal('发现档案 · ' + first.name, `<div class="v56-record-page"><div class="v56-record-cover">${imgTag(cover, first.name)}<span>发现档案 · FIELD NOTES</span></div><div class="v56-record-head"><div><h2>${esc(first.name)}</h2><p class="latin">${esc(group.latin || '学名尚待核实')}</p></div><strong>${records.length} 次发现</strong></div><div class="v56-record-stats"><span>观察次数 <b>${records.length}</b></span><span>记录地点 <b>${locationRows.filter(place => place.name !== '未记录地点').length}</b></span></div><section class="v56-observation"><div class="v56-section-title"><h3>观察足迹</h3><span>按地点汇总</span></div><div class="v56-place-list">${placeCards}</div></section><section class="v56-timeline"><div class="v56-section-title"><h3>发现记录</h3><span>备注与照片按日期排列</span></div>${timeline}</section><div class="v56-record-actions"><button class="outlined-btn" type="button" data-action="v56-add-plant" data-id="${esc(first.id)}">＋ 加入我的植物</button><button class="outlined-btn" type="button" data-action="v56-add-record" data-id="${esc(first.id)}">＋ 添加记录</button><button class="primary-btn" type="button" data-action="v56-open-guide" data-id="${esc(first.id)}">了解植物百科 →</button></div></div>`);
     document.querySelector('#modal-root .modal')?.classList.add('v56-record-modal');
-    mountMap(recordMapId, records);
   };
 
   function guideKey(group) { return encyclopedia.keyFor({ name: group.first.name, latin: group.latin }); }
@@ -293,7 +290,6 @@ function sightingPhotos(record) {
   }
 
   async function openGuide(id, refresh = false) {
-    destroyMap(recordMapId);
     const group = groupFor(id);
     if (!group) return;
     const cover = group.records.flatMap(sightingPhotos)[0] || '';
@@ -339,20 +335,17 @@ function sightingPhotos(record) {
     }
     if (action === 'v58-record-place') {
       const point = coordinate(element.dataset); if (!point) return;
-      const group = groupFor(id);
-      destroyMap(recordMapId);
-      sightingForm(null, { name: group?.first.name || '', latin: group?.latin || '', location: element.dataset.name, lat: point[0], lon: point[1] });
+      sightingForm(null, { location: element.dataset.name, lat: point[0], lon: point[1] });
       return;
     }
     if (action === 'v56-add-record') {
       const group = groupFor(id);
-      if (group) { destroyMap(recordMapId); sightingForm(null, { name: group.first.name, latin: group.latin }); }
+      if (group) { sightingForm(null, { name: group.first.name, latin: group.latin }); }
       return;
     }
     if (action === 'v56-add-plant') {
       const group = groupFor(id);
       if (group) {
-        destroyMap(recordMapId);
         plantForm(null, { name: group.first.name, latin: group.latin, image: group.records.flatMap(sightingPhotos)[0] || '' });
         document.querySelector('#modal-root .modal-header h2').textContent = '加入我的植物';
       }
@@ -361,10 +354,9 @@ function sightingPhotos(record) {
     if (action === 'v56-open-guide') return openGuide(id);
     if (action === 'v56-refresh-guide') return openGuide(id, true);
     if (action === 'v56-back-record') return sightingDetail(id);
-    if (action === 'edit-sighting') destroyMap(recordMapId);
     return oldAct(action, element);
   };
 
   const oldClose = closeModal;
-  closeModal = function() { destroyMap(recordMapId); destroyMap(pickerMapId); oldClose(); };
+  closeModal = function() { destroyMap(pickerMapId); oldClose(); };
 })();

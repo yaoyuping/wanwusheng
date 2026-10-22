@@ -48,8 +48,7 @@ try {
     await page.evaluate(() => { ui.tab = 'atlas'; render(); });
     assert.equal(await page.locator('#v56-atlas-map .v56-pin').count(), 1);
     await page.locator('.v56-group-card').click();
-    const detailSearch = page.locator('.v58-place-search[data-map="v56-record-map"]');
-    assert.equal(await detailSearch.count(), 1);
+    assert.equal(await page.locator('.v56-record-page .v56-map').count(), 0);
     await page.locator('[data-action="edit-sighting"]').click();
     assert.equal(Number(await form.locator('[name=lat]').inputValue()), point.lat);
     await form.locator('[name=location]').fill('接口故障');
