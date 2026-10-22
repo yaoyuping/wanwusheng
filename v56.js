@@ -8,6 +8,9 @@ function sightingPhotos(record) {
   const atlasMapId = 'v56-atlas-map', recordMapId = 'v56-record-map';
   const encyclopedia = window.yiyuEncyclopedia;
   const maps = new Map();
+  const searchStates = new WeakMap();
+  const searchMarkers = new WeakMap();
+  const pickerMapId = 'v58-picker-map';
   const pendingGuides = new Map();
   const observationMarker = '【AI 植物百科草稿】';
 
@@ -51,7 +54,11 @@ function sightingPhotos(record) {
 
   function mapSection(records, id, title) {
     const located = records.filter(record => coordinate(record));
-    return `<section class="v56-map-section" aria-label="${esc(title)}"><div class="v56-section-title"><h3>${esc(title)}</h3><span>${located.length} 个有坐标的记录</span></div>${located.length ? `<div class="v56-map" id="${id}" role="region" aria-label="${esc(title)}地图"></div><p class="v56-map-credit">地图打开时自动加载 OpenStreetMap 底图；标记可查看地点和发现次数。</p>` : '<p class="v56-map-empty">发现记录还没有坐标。编辑记录并保存地点定位后，足迹地图会自动显示。</p>'}</section>`;
+    return `<section class="v56-map-section" aria-label="${esc(title)}"><div class="v56-section-title"><h3>${esc(title)}</h3><span>${located.length} 个有坐标的记录</span></div>${searchBox(id)}<div class="v56-map" id="${id}" role="region" aria-label="${esc(title)}地图"></div>${located.length ? '' : '<p class="v56-map-empty">还没有带坐标的发现记录。搜索地点后，可在地图上添加一次发现。</p>'}<p class="v56-map-credit">地图数据 © OpenStreetMap contributors · 搜索地点后可选择位置并记录发现。</p></section>`;
+  }
+
+  function searchBox(mapId) {
+    return `<div class="v58-place-search" data-map="${mapId}"><label for="${mapId}-query">搜索地点</label><div class="v58-search-line"><input type="search" id="${mapId}-query" class="v58-place-query" maxlength="180" placeholder="输入城市、公园或地址，如：杭州植物园" autocomplete="off"><button type="button" class="outlined-btn" data-action="v58-search-place">搜索地点</button></div><p class="v58-search-state" role="status" aria-live="polite"></p><div class="v58-search-results"></div></div>`;
   }
 
   function destroyMap(id) {
@@ -62,7 +69,7 @@ function sightingPhotos(record) {
   function mountMap(id, records) {
     destroyMap(id);
     const container = document.getElementById(id), located = records.filter(record => coordinate(record));
-    if (!container || !located.length) return;
+    if (!container) return;
     if (!window.L) { container.textContent = '地图暂时不可用；下方的地点记录仍可查看。'; return; }
     const map = L.map(container, { scrollWheelZoom: false, zoomControl: true });
     maps.set(id, map);
@@ -80,10 +87,125 @@ function sightingPhotos(record) {
       L.marker(item.position, { icon }).addTo(map).bindPopup(`<div class="v56-map-popup">${rows}${count > 8 ? `<small>另有 ${count - 8} 条记录</small>` : ''}</div>`);
     }
     const bounds = located.map(record => coordinate(record));
-    if (bounds.length === 1) map.setView(bounds[0], 13);
+    if (!bounds.length) map.setView([35, 105], 4);
+    else if (bounds.length === 1) map.setView(bounds[0], 13);
     else map.fitBounds(bounds, { padding: [28, 28], maxZoom: 13 });
     setTimeout(() => { if (container.isConnected && maps.get(id) === map) map.invalidateSize(); }, 80);
   }
+
+  function selectedPoint(scope, point) {
+    const form = scope.closest('#sighting-form'), map = maps.get(scope.dataset.map);
+    if (form) {
+      form.querySelector('[name=location]').value = point.name;
+      form.querySelector('[name=lat]').value = String(point.lat);
+      form.querySelector('[name=lon]').value = String(point.lon);
+      form.querySelector('#v2-coord-state').textContent = `已选择：${point.name} · ${point.lat.toFixed(5)}, ${point.lon.toFixed(5)}（保存后加入足迹）`;
+    }
+    if (map) {
+      const old = searchMarkers.get(map); if (old) old.remove();
+      const marker = L.marker([point.lat, point.lon]).addTo(map);
+      searchMarkers.set(map, marker);
+      map.setView([point.lat, point.lon], 16);
+      if (!form) {
+        const record = scope.dataset.map === recordMapId ? document.querySelector('.v56-record-actions [data-action="v56-add-record"]')?.dataset.id : '';
+        marker.bindPopup(`<div class="v58-map-choice"><b>${esc(point.name)}</b><button type="button" class="outlined-btn" data-action="v58-record-place" data-id="${esc(record || '')}" data-name="${esc(point.name)}" data-lat="${point.lat}" data-lon="${point.lon}">在这里添加记录</button></div>`).openPopup();
+      }
+    }
+    scope.querySelector('.v58-search-state').textContent = form ? '地点与坐标已填入，可在地图上点选微调，再保存发现。' : '地图已移动到所选地点，可点击标记添加记录。';
+    scope.querySelector('.v58-search-results').replaceChildren();
+  }
+
+  async function searchPlace(scope) {
+    const input = scope.querySelector('.v58-place-query'), query = input.value.trim();
+    const status = scope.querySelector('.v58-search-state'), results = scope.querySelector('.v58-search-results');
+    if (scope.querySelector('[data-action="v2-geolocate"]')?.disabled) { status.textContent = '手机正在定位，请等待定位完成后再搜索地点。'; return; }
+    if (query.length < 2) { status.textContent = '请输入至少 2 个字的地点名称，例如“杭州植物园”。'; return; }
+    searchStates.get(scope)?.controller?.abort();
+    const controller = new AbortController(), state = { controller, results: [] };
+    searchStates.set(scope, state);
+    const button = scope.querySelector('[data-action="v58-search-place"]'); button.disabled = true;
+    status.textContent = '正在搜索地点…'; results.replaceChildren();
+    const timeout = setTimeout(() => controller.abort(), 18000);
+    try {
+      const response = await fetch(yiyuAPILink('/api/places?q=' + encodeURIComponent(query)), { headers: { 'X-Yiyu-Password': yiyuPassword() }, signal: controller.signal });
+      const data = await response.json();
+      if (!response.ok) throw Error(data.error || '地点搜索失败，请稍后重试。');
+      if (!Array.isArray(data.results)) throw Error('地点搜索未返回有效结果，请重试。');
+      if (!scope.isConnected || searchStates.get(scope) !== state) return;
+      state.results = data.results.filter(result => coordinate(result) && typeof result.name === 'string');
+      status.textContent = state.results.length ? `找到 ${state.results.length} 个地点，请选择；同名地点请核对地址。` : '未找到地点，请补充城市名后重试，例如“杭州市植物园”；也可以在地图上点选。';
+      results.innerHTML = state.results.map((point, index) => `<button type="button" class="v58-place-result" data-action="v58-select-place" data-index="${index}"><strong>${esc(point.name)}</strong><small>${esc(point.address || '')}</small></button>`).join('');
+    } catch (error) {
+      if (scope.isConnected && searchStates.get(scope) === state) status.textContent = error.name === 'AbortError' ? '搜索超时，请重试；也可以在地图上点选位置。' : error.message;
+    } finally {
+      clearTimeout(timeout);
+      if (scope.isConnected && searchStates.get(scope) === state) button.disabled = false;
+    }
+  }
+
+  const oldForm = sightingForm;
+  sightingForm = function(id = null, prefill = {}) {
+    destroyMap(pickerMapId);
+    oldForm(id, prefill);
+    const form = document.getElementById('sighting-form'); if (!form) return;
+    const field = form.querySelector('[name=location]').closest('.field');
+    const scope = document.createElement('div'); scope.className = 'v58-place-search'; scope.dataset.map = pickerMapId;
+    scope.innerHTML = '<p class="v58-search-state" role="status" aria-live="polite"></p><div class="v58-search-results"></div>';
+    const row = field.querySelector('.v2-location-line');
+    scope.prepend(row); field.querySelector('label').after(scope);
+    const input = row.querySelector('[name=location]'); input.classList.add('v58-place-query'); input.maxLength = 180;
+    input.placeholder = '输入城市、公园或地址，再点“搜索地点”';
+    row.insertAdjacentHTML('beforeend', '<button type="button" class="outlined-btn" data-action="v58-search-place">搜索地点</button>');
+    field.querySelector('.v4-location-map').textContent = '搜索并选中地点，或在地图上点选；坐标随这次观察保存在本机。';
+    const coordStatus = form.querySelector('#v2-coord-state'); coordStatus.setAttribute('role', 'status');
+    coordStatus.textContent = coordinate(Object.fromEntries(new FormData(form))) ? coordStatus.textContent : '可搜索地点、在地图上点选，或使用手机定位。';
+    field.insertAdjacentHTML('beforeend', `<div class="v56-map v58-picker-map" id="${pickerMapId}" role="region" aria-label="选择发现地点地图"></div>`);
+    const point = coordinate(Object.fromEntries(new FormData(form)));
+    mountMap(pickerMapId, []);
+    const map = maps.get(pickerMapId);
+    if (map) {
+      if (point) selectedPoint(scope, { name: input.value || '已记录地点', lat: point[0], lon: point[1] });
+      map.on('click', event => {
+        if (scope.querySelector('[data-action="v2-geolocate"]')?.disabled) return;
+        selectedPoint(scope, { name: input.value.trim() || '地图自选地点', lat: event.latlng.lat, lon: event.latlng.lng });
+      });
+    }
+    input.addEventListener('input', () => {
+      searchStates.get(scope)?.controller?.abort(); searchStates.delete(scope);
+      scope.querySelector('[data-action="v58-search-place"]').disabled = false;
+      scope.querySelector('.v58-search-results').replaceChildren();
+      form.querySelector('[name=lat]').value = ''; form.querySelector('[name=lon]').value = '';
+      if (map) { searchMarkers.get(map)?.remove(); searchMarkers.delete(map); }
+      coordStatus.textContent = '地点文字已修改，请搜索并选择地点，或在地图上点选以保存新坐标。';
+      scope.querySelector('.v58-search-state').textContent = '';
+    });
+  };
+
+  const oldLocation = v2getLocation;
+  v2getLocation = async function() {
+    const form = document.getElementById('sighting-form');
+    const input = form?.querySelector('[name=location]');
+    if (input) input.readOnly = true;
+    try { await oldLocation(); } finally { if (input) input.readOnly = false; }
+    if (!form?.isConnected) return;
+    const point = coordinate(Object.fromEntries(new FormData(form)));
+    if (point && form.querySelector('#v2-coord-state').textContent.startsWith('✓')) selectedPoint(form.querySelector('.v58-place-search'), { name: form.querySelector('[name=location]').value || '手机定位地点', lat: point[0], lon: point[1] });
+  };
+
+  document.addEventListener('keydown', event => {
+    if (event.key !== 'Enter' || event.isComposing || !event.target.matches('.v58-place-query')) return;
+    event.preventDefault(); event.stopImmediatePropagation();
+    searchPlace(event.target.closest('.v58-place-search'));
+  }, true);
+
+  document.addEventListener('input', event => {
+    if (!event.target.matches('.v58-place-query') || event.target.closest('#sighting-form')) return;
+    const scope = event.target.closest('.v58-place-search');
+    searchStates.get(scope)?.controller?.abort(); searchStates.delete(scope);
+    scope.querySelector('[data-action="v58-search-place"]').disabled = false;
+    scope.querySelector('.v58-search-results').replaceChildren();
+    scope.querySelector('.v58-search-state').textContent = '';
+  });
 
   function groupCard(group) {
     const first = group.first, cover = group.records.flatMap(sightingPhotos)[0] || '';
@@ -209,6 +331,19 @@ function sightingPhotos(record) {
   const oldAct = act;
   act = async function(action, element) {
     const id = element.dataset.id;
+    if (action === 'v58-search-place') return searchPlace(element.closest('.v58-place-search'));
+    if (action === 'v58-select-place') {
+      const scope = element.closest('.v58-place-search'), point = searchStates.get(scope)?.results[Number(element.dataset.index)];
+      if (point) selectedPoint(scope, { ...point, lat: Number(point.lat), lon: Number(point.lon) });
+      return;
+    }
+    if (action === 'v58-record-place') {
+      const point = coordinate(element.dataset); if (!point) return;
+      const group = groupFor(id);
+      destroyMap(recordMapId);
+      sightingForm(null, { name: group?.first.name || '', latin: group?.latin || '', location: element.dataset.name, lat: point[0], lon: point[1] });
+      return;
+    }
     if (action === 'v56-add-record') {
       const group = groupFor(id);
       if (group) { destroyMap(recordMapId); sightingForm(null, { name: group.first.name, latin: group.latin }); }
@@ -231,5 +366,5 @@ function sightingPhotos(record) {
   };
 
   const oldClose = closeModal;
-  closeModal = function() { destroyMap(recordMapId); oldClose(); };
+  closeModal = function() { destroyMap(recordMapId); destroyMap(pickerMapId); oldClose(); };
 })();
