@@ -34,3 +34,8 @@
 .v57-lightbox-controls button:disabled{opacity:.3;cursor:default}
 @media(max-width:800px){.bottom-nav{grid-template-columns:repeat(4,minmax(0,1fr))!important}}
 @media(max-width:620px){.v57-photo-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.v57-photo-picker .v53-photo-placeholder{gap:6px;padding-bottom:54px}.v57-photo-picker .v53-photo-icon{width:48px;height:48px}.v57-photo-picker .v53-upload-label{bottom:12px;min-height:37px;padding:7px 13px!important}.v56-record-actions{grid-template-columns:repeat(2,minmax(0,1fr))}.v56-record-actions [data-action="v56-open-guide"]{grid-column:1/-1}.v57-status-badge{top:8px;left:8px;font-size:11px;padding:5px 8px}.v57-lightbox{padding:13px}.v57-lightbox-controls{gap:14px}.v57-visit-photos .v56-visit-photo{width:calc(50% - 5px);height:112px}}
+
+/* Keep mobile form text large enough to avoid iOS focus zoom. */
+@media(max-width:800px),(pointer:coarse){
+  #modal-root :is(input,textarea,select){font-size:16px!important}
+}
