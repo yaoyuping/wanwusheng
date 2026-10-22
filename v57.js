@@ -18,6 +18,9 @@
   const oldCard = plantCard;
   plantCard = function(plant) {
     const root = document.createElement('div'); root.innerHTML = oldCard(plant);
+    root.querySelector('.plant-card')?.classList.add('v573-photo-card');
+    const body = root.querySelector('.card-body'), location = root.querySelector('.card-tag');
+    if (body && location) body.insertBefore(location, body.querySelector('.card-meta'));
     const status = String(plant.status || '').trim();
     if (status && status !== '健康') {
       const badge = document.createElement('span');
