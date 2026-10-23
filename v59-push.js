@@ -18,7 +18,7 @@
   const previousSettings = settingsView;
   settingsView = function() {
     const enabled = Boolean(read().enabled);
-    return `<section class="panel v59-push-panel" aria-label="手机养护提醒"><h2>手机养护提醒</h2><p>开启后，每天北京时间上午 9–10 点汇总提醒到期的浇水检查与未完成待办，网站关闭后也可收到。</p><p>开启会同步提醒日期和本机推送订阅；植物照片、名称和笔记保存在本机。</p>${ios() && !installed() ? '<p class="v59-push-install">iPhone：请用 Safari 打开网站，点“分享 → 添加到主屏幕”，再从主屏幕打开并开启提醒。需要 iOS 16.4 或以上。</p>' : ''}<div class="setting-actions"><button type="button" class="primary-btn" data-action="v59-push-enable" ${busy ? 'disabled' : ''}>${enabled ? '重新同步手机提醒' : '开启手机提醒'}</button><button type="button" class="outlined-btn" data-action="v59-push-test" ${busy || !enabled ? 'disabled' : ''}>发送测试通知</button><button type="button" class="outlined-btn" data-action="v59-push-disable" ${busy || (!enabled && !read().pendingRemoval) ? 'disabled' : ''}>关闭手机提醒</button></div><p id="v59-push-status" role="status" aria-live="polite">${esc(status || (enabled ? '已开启；修改养护记录或待办后会自动同步提醒日期。' : '尚未开启，只有主动点击开启才会请求通知权限。'))}</p></section>` + previousSettings();
+    return `<section class="panel v59-push-panel" aria-label="手机养护提醒"><h2>手机养护提醒</h2><p>开启后，每天北京时间上午 8–9 点汇总提醒到期的浇水检查与未完成待办，网站关闭后也可收到。</p><p>开启会同步提醒日期和本机推送订阅；植物照片、名称和笔记保存在本机。</p>${ios() && !installed() ? '<p class="v59-push-install">iPhone：请用 Safari 打开网站，点“分享 → 添加到主屏幕”，再从主屏幕打开并开启提醒。需要 iOS 16.4 或以上。</p>' : ''}<div class="setting-actions"><button type="button" class="primary-btn" data-action="v59-push-enable" ${busy ? 'disabled' : ''}>${enabled ? '重新同步手机提醒' : '开启手机提醒'}</button><button type="button" class="outlined-btn" data-action="v59-push-test" ${busy || !enabled ? 'disabled' : ''}>发送测试通知</button><button type="button" class="outlined-btn" data-action="v59-push-disable" ${busy || (!enabled && !read().pendingRemoval) ? 'disabled' : ''}>关闭手机提醒</button></div><p id="v59-push-status" role="status" aria-live="polite">${esc(status || (enabled ? '已开启；修改养护记录或待办后会自动同步提醒日期。' : '尚未开启，只有主动点击开启才会请求通知权限。'))}</p></section>` + previousSettings();
   };
   async function request(body) {
     const controller = new AbortController(), timeout = setTimeout(() => controller.abort(), 20000);
@@ -97,7 +97,7 @@
           paint('手机订阅已失效，请重新开启手机提醒。'); return;
         }
         const data = await request({ op: 'subscribe', ...device, subscription: subscription.toJSON(), items: await items() });
-        if (read().enabled) paint(`已同步 ${data.count} 项手机提醒，每天北京时间上午 9–10 点汇总推送。`);
+        if (read().enabled) paint(`已同步 ${data.count} 项手机提醒，每天北京时间上午 8–9 点汇总推送。`);
       } while (dirty && read().enabled);
     })();
     try { await flight; } finally { flight = null; }
