@@ -4,6 +4,14 @@
   let undo = null;
   const checkKey = plant => `${plant.lastWatered || ''}|${Math.max(1, Number(plant.interval) || 7)}`;
   const dismissed = plant => plant.dismissedCareCheck === checkKey(plant);
+  const checkLog = (plant, log, day) => log.action === '检查盆土' && log.careCheckKey === checkKey(plant) && (!day || log.date === day);
+  const checked = (plant, day = stamp()) => (plant.logs || []).some(log => checkLog(plant, log, day));
+  function nextCheckDate(plant) {
+    const due = v2plusDate(plant.lastWatered, Math.max(1, Number(plant.interval) || 7));
+    const latest = (plant.logs || []).filter(log => checkLog(plant, log) && log.date >= due).map(log => log.date).sort().at(-1);
+    return latest ? v2plusDate(latest, 1) : due;
+  }
+  const changingTasks = new Set();
   function normalize() {
     if (!state) return false;
     let changed = false;
@@ -19,10 +27,10 @@
   const originalSave = save;
   save = async function() { normalize(); await originalSave(); window.yiyuPush?.scheduleSync(); };
   const originalDayTasks = v2dayTasks;
-  v2dayTasks = day => originalDayTasks(day).filter(task => !task.generated || !dismissed(state.plants.find(plant => plant.id === task.plantId) || {}));
+  v2dayTasks = day => originalDayTasks(day).filter(task => !task.generated || !dismissed(state.plants.find(plant => plant.id === task.plantId) || {})).map(task => task.generated ? { ...task, done: checked(state.plants.find(plant => plant.id === task.plantId) || {}, day) } : task);
   const originalDueCount = v4DueCount;
   v4DueCount = function() {
-    return originalDueCount() - state.plants.filter(plant => plant.reminder !== false && plantStatus(plant).due && dismissed(plant)).length;
+    return originalDueCount() - state.plants.filter(plant => plant.reminder !== false && plantStatus(plant).due && (dismissed(plant) || checked(plant))).length;
   };
   const originalCare = careView;
   careView = function() { if (normalize()) void save(); return originalCare(); };
@@ -47,6 +55,31 @@
   }
   const originalAct = act;
   act = async function(action, element) {
+    if (action === 'v2-toggle-task' || action === 'v59-toggle-check') {
+      const day = element.dataset.day || ui.selectedDay || stamp(), token = `${action}|${element.dataset.id}|${day}`;
+      if (changingTasks.has(token)) return;
+      changingTasks.add(token); element.disabled = true;
+      try {
+        let done;
+        if (action === 'v2-toggle-task') {
+          const task = state.tasks?.find(item => item.id === element.dataset.id);
+          if (!task) return;
+          done = task.done = !task.done;
+          if (done) task.completedAt = new Date().toISOString(); else delete task.completedAt;
+        } else {
+          const plant = state.plants.find(item => item.id === element.dataset.id);
+          if (!plant) return;
+          done = !checked(plant, day);
+          if (done) {
+            plant.logs ||= [];
+            plant.logs.unshift({ id: id(), date: day, action: '检查盆土', note: '已完成盆土检查', careCheckKey: checkKey(plant) });
+          } else plant.logs = plant.logs.filter(log => !checkLog(plant, log, day));
+        }
+        state.isDemo = false; await save(); render();
+        toast(done ? action === 'v59-toggle-check' ? '已完成检查并保存养护记录' : '待办已完成' : '已恢复为待办');
+      } finally { changingTasks.delete(token); element.disabled = false; }
+      return;
+    }
     if (action === 'v59-delete-log') {
       const plant = state.plants.find(item => item.id === element.dataset.id);
       const index = plant?.logs?.findIndex(log => log.id === element.dataset.logId) ?? -1;
@@ -86,5 +119,5 @@
     }
     return originalAct(action, element);
   };
-  window.yiyuCare = { checkKey, dismissed };
+  window.yiyuCare = { checkKey, dismissed, checked, nextCheckDate };
 })();

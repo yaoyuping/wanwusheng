@@ -4,6 +4,10 @@
 .v3-log-header .v59-delete{margin-left:5px;min-height:34px;padding:5px 10px}
 .v2-agenda-entry{gap:9px;flex-wrap:wrap}
 .v2-agenda-entry>div{min-width:80px;overflow-wrap:anywhere}
+.v59-task-check{display:inline-grid;place-items:center;flex:0 0 44px;width:44px;height:44px;padding:0;border:1px solid #c7d9ca;border-radius:50%;background:#fff;color:#729680;font-size:25px;cursor:pointer}
+.v59-task-check[aria-checked="true"]{background:#e8f4eb;border-color:#8cb89a;color:#267647}
+.v59-task-check:focus-visible{outline:2px solid #267647;outline-offset:3px}
+.v59-task-done>div>b{color:#829487;text-decoration:line-through}
 .v59-undo{display:flex;align-items:center;gap:16px;pointer-events:auto}
 .v59-undo button{border:1px solid #ffffff6b;border-radius:99px;background:#ffffff15;padding:5px 13px;color:#fff;font:inherit;font-weight:750;white-space:nowrap;cursor:pointer}
 @media(max-width:620px){.v59-delete{min-height:40px;padding:8px 11px}.v3-log-header{flex-wrap:wrap}.v3-log-header>b{flex:1}.v3-log-header .v59-delete{margin-left:0}.v2-agenda-entry .v2-text-button{min-height:40px}}

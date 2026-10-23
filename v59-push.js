@@ -39,7 +39,7 @@
     const result = [];
     for (const plant of state.plants) {
       if (plant.reminder === false || !plant.lastWatered || window.yiyuCare.dismissed(plant)) continue;
-      result.push({ id: await hash('water|' + plant.id), date: v2plusDate(plant.lastWatered, Math.max(1, Number(plant.interval) || 7)), kind: 'water' });
+      result.push({ id: await hash('water|' + plant.id), date: window.yiyuCare.nextCheckDate(plant), kind: 'water' });
     }
     for (const task of state.tasks || []) if (!task.done && task.date) result.push({ id: await hash('task|' + task.id), date: task.date, kind: 'task' });
     return result;
