@@ -50,7 +50,9 @@
 .plant-card.v573-photo-card .card-body .card-tag{position:static!important;display:block;max-width:100%;padding:0!important;margin:0 0 8px;background:transparent!important;backdrop-filter:none;border-radius:0!important;color:#fff!important;font-size:12px!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .plant-card.v573-photo-card .card-meta{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:6px 10px;margin-top:0;color:#fff!important}
 .plant-card.v573-photo-card .card-meta span{color:#fff!important;font-size:12px!important}
-.plant-card.v573-photo-card .mini-state{background:#ffffff24!important;border:1px solid #ffffff40;text-shadow:none}
+.plant-card.v573-photo-card .v57-card-badges{position:absolute;top:14px;left:14px;right:14px;z-index:1;display:flex;flex-wrap:wrap;align-items:flex-start;gap:6px}
+.plant-card.v573-photo-card .mini-state{background:#183d2bcc!important;border:1px solid #ffffff40;color:#fff!important;font-size:12px!important;text-shadow:none;backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);white-space:normal}
+.plant-card.v573-photo-card .v57-card-badges .v57-status-badge{position:static;max-width:100%}
 .plant-card.v573-photo-card .mini-state.due{background:#785620d9!important}
 .plant-card.v573-photo-card .v57-status-badge{z-index:1;color:#fff;border:1px solid #ffffff50;background:#335b6be6}
 .plant-card.v573-photo-card .v57-status-badge.is-ill{background:#963f32eb}
@@ -61,4 +63,6 @@
   .plant-card.v573-photo-card .card-body h3{font-size:22px!important}
   .plant-card.v573-photo-card .card-body .latin,.plant-card.v573-photo-card .card-body .card-tag,.plant-card.v573-photo-card .card-meta span{font-size:11px!important}
   .plant-card.v573-photo-card .card-meta{flex-direction:column;align-items:flex-start;gap:7px}
+  .plant-card.v573-photo-card .v57-card-badges{top:11px;left:11px;right:11px}
+  .plant-card.v573-photo-card .mini-state{font-size:11px!important}
 }

@@ -21,13 +21,17 @@
     root.querySelector('.plant-card')?.classList.add('v573-photo-card');
     const body = root.querySelector('.card-body'), location = root.querySelector('.card-tag');
     if (body && location) body.insertBefore(location, body.querySelector('.card-meta'));
+    const badges = document.createElement('span'), reminder = root.querySelector('.mini-state');
+    badges.className = 'v57-card-badges';
+    if (reminder) badges.append(reminder);
     const status = String(plant.status || '').trim();
     if (status && status !== '健康') {
       const badge = document.createElement('span');
       badge.className = 'v57-status-badge ' + (status === '生病中' ? 'is-ill' : status === '需关注' ? 'needs-attention' : 'is-custom');
       badge.textContent = (status === '生病中' ? '✚ ' : status === '需关注' ? '! ' : '● ') + status;
-      root.querySelector('.card-photo')?.append(badge);
+      badges.append(badge);
     }
+    root.querySelector('.card-photo')?.append(badges);
     return root.innerHTML;
   };
 
