@@ -66,6 +66,7 @@ try {
   await page.locator('[data-action="v3-quick-log"][data-type="生长观察"]').click();
   const form = page.locator('#log-form');
   assert.equal(await form.locator('[name="action"][value="生长观察"]').isChecked(), true);
+  await form.locator('[name="photo"]').setInputFiles(resolve(root, 'icon-512.png'));
   await form.locator('[name="note"]').fill('断网后记录的新叶');
   await form.locator('[type="submit"]').click();
   await form.waitFor({ state: 'hidden' });
@@ -76,6 +77,10 @@ try {
   await page.goto(base + '#plants/offline-plant/logs', { waitUntil: 'domcontentloaded', timeout: 5000 });
   await page.locator('.detail-page').filter({ hasText: '断网后记录的新叶' }).waitFor({ timeout: 5000 });
   assert.equal(await page.evaluate(() => state.plants[0].image), image, 'Photos survive offline reopening');
+  await page.locator('[data-action="v57-view-plant-photo"]').click();
+  await page.waitForFunction(() => document.querySelector('.v57-lightbox-image img')?.naturalWidth > 0);
+  assert.equal(await page.locator('.v57-lightbox-image img').getAttribute('src'), await page.evaluate(() => state.plants[0].logs[0].image));
+  await page.locator('.v57-lightbox-close').click();
   await page.screenshot({ path: '/tmp/wanwusheng-offline-390.png' });
 
   // Cache-first navigation must still pick up a complete new release on reconnect.

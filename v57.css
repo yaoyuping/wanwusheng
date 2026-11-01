@@ -20,6 +20,12 @@
 .v57-photo-count{margin:10px 0 4px}
 .v57-visit-photos{display:flex;flex-wrap:wrap;gap:9px;margin:0 0 14px}
 .v57-visit-photos .v56-visit-photo{border:0;padding:0;margin:0;cursor:zoom-in}
+.v57-plant-photo{display:block;max-width:100%;border:0;padding:0;background:transparent;border-radius:12px;cursor:zoom-in;overflow:hidden}
+.v3-log-main .v57-plant-photo{margin-top:12px;width:200px}
+.v57-plant-photo .v3-log-img{display:block;margin:0}
+.v2-gallery .v57-plant-photo{width:100%;border-radius:0}
+.v2-gallery .v57-plant-photo img{display:block}
+.v57-plant-photo:focus-visible{outline:3px solid #087f63;outline-offset:3px}
 .v57-cache-state{padding:10px 12px;border-radius:12px;background:#f1f6ee}
 .v56-record-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
 .v56-record-actions button{min-width:0!important}

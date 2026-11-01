@@ -35,6 +35,21 @@
     return root.innerHTML;
   };
 
+  const oldLogCard = v3LogCard;
+  v3LogCard = function(log) {
+    const root = document.createElement('div'); root.innerHTML = oldLogCard(log);
+    const image = root.querySelector('.v3-log-img');
+    const plant = state.plants.find(item => (item.logs || []).includes(log));
+    if (image && plant) {
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'v57-plant-photo';
+      button.dataset.action = 'v57-view-plant-photo'; button.dataset.id = plant.id; button.dataset.logId = log.id;
+      button.setAttribute('aria-label', `查看${plant.name}的${log.action || '养护'}照片大图`);
+      image.replaceWith(button); button.append(image);
+    }
+    return root.innerHTML;
+  };
+
   function paintDraft(form) {
     const draft = drafts.get(form), gallery = form.querySelector('#sighting-preview');
     if (!draft || !gallery) return;
@@ -114,6 +129,7 @@
   function closePhoto() {
     document.getElementById('v57-lightbox')?.remove();
     const focus = lightbox?.focus;
+    if (lightbox) document.body.style.overflow = lightbox.overflow;
     lightbox = null;
     if (focus?.isConnected) focus.focus({ preventScroll: true });
   }
@@ -128,10 +144,20 @@
   }
   function openPhoto(sid, index) {
     const record = state.sightings.find(item => item.id === sid), photos = sightingPhotos(record);
+    openPhotos(photos, record?.name, index, '观察照片');
+  }
+  function openPlantPhoto(pid, logId) {
+    const plant = state.plants.find(item => item.id === pid);
+    const logs = (plant?.logs || []).filter(log => imageSrc(log.image));
+    const index = logs.findIndex(log => log.id === logId);
+    if (index >= 0) openPhotos(logs.map(log => log.image), plant.name, index, '养护照片');
+  }
+  function openPhotos(photos, name, index, label) {
     if (!photos.length) return;
     closePhoto();
-    lightbox = { photos, name: record.name, index: Math.min(Math.max(Number(index) || 0, 0), photos.length - 1), focus: document.activeElement };
-    const root = document.createElement('div'); root.id = 'v57-lightbox'; root.className = 'v57-lightbox'; root.setAttribute('role', 'dialog'); root.setAttribute('aria-modal', 'true'); root.setAttribute('aria-label', '观察照片');
+    lightbox = { photos, name, index: Math.min(Math.max(Number(index) || 0, 0), photos.length - 1), focus: document.activeElement, overflow: document.body.style.overflow };
+    document.body.style.overflow = 'hidden';
+    const root = document.createElement('div'); root.id = 'v57-lightbox'; root.className = 'v57-lightbox'; root.setAttribute('role', 'dialog'); root.setAttribute('aria-modal', 'true'); root.setAttribute('aria-label', label);
     root.innerHTML = '<button class="v57-lightbox-shade" type="button" data-action="v57-close-photo" aria-label="关闭照片"></button><div class="v57-lightbox-body"><button class="v57-lightbox-close" type="button" data-action="v57-close-photo" aria-label="关闭照片">×</button><div class="v57-lightbox-image"></div><div class="v57-lightbox-controls"><button type="button" data-action="v57-prev-photo">← 上一张</button><span class="v57-lightbox-count" role="status"></span><button type="button" data-action="v57-next-photo">下一张 →</button></div></div>';
     document.body.append(root); paintPhoto(); root.querySelector('.v57-lightbox-close').focus();
   }
@@ -160,6 +186,7 @@
       return;
     }
     if (action === 'v57-view-photo') return openPhoto(element.dataset.id, element.dataset.index);
+    if (action === 'v57-view-plant-photo') return openPlantPhoto(element.dataset.id, element.dataset.logId);
     if (action === 'v57-close-photo') return closePhoto();
     if (lightbox && ['v57-prev-photo', 'v57-next-photo'].includes(action)) {
       lightbox.index += action === 'v57-prev-photo' ? -1 : 1;
