@@ -1,16 +1,12 @@
-/* 万物生 v5.6 · 同种发现归档、自动足迹地图与独立植物百科。 */
+/* 万物生 v5.6 · 同种发现归档、地点记录与独立植物百科。 */
 function sightingPhotos(record) {
   return (Array.isArray(record?.images) ? record.images : [record?.image || record?.photo]).filter(value => typeof value === 'string' && imageSrc(value));
 }
 
 (() => {
   'use strict';
-  const atlasMapId = 'v56-atlas-map';
   const encyclopedia = window.yiyuEncyclopedia;
-  const maps = new Map();
   const searchStates = new WeakMap();
-  const searchMarkers = new WeakMap();
-  const mapFits = new WeakMap();
   const pendingGuides = new Map();
   const observationMarker = '【AI 植物百科草稿】';
 
@@ -52,94 +48,14 @@ function sightingPhotos(record) {
     return String(notes || '').split(observationMarker)[0].trim();
   }
 
-  function mapSection(records, id, title) {
-    const located = records.filter(record => coordinate(record));
-    return `<section class="v56-map-section v583-map-section" aria-label="${esc(title)}"><div class="v56-section-title"><div><h3>${esc(title)}</h3><span>${located.length} 次发现已留下足迹</span></div><button type="button" class="v583-map-fit" data-action="v583-map-fit" data-map="${id}">${ico('pin', 14)} 查看全部足迹</button></div>${searchBox(id)}<div class="v56-map v583-map" id="${id}" role="region" aria-label="${esc(title)}地图"></div>${located.length ? '' : '<p class="v56-map-empty">还没有带坐标的发现记录。搜索地点后，可在地图上添加一次发现。</p>'}<p class="v583-map-state" role="status" aria-live="polite"></p><button type="button" class="v584-map-retry outlined-btn" data-action="v584-map-retry" data-map="${id}" hidden>重新加载地图</button><p class="v56-map-credit"><span class="v583-map-dot" aria-hidden="true"></span>绿色标记记录植物相遇，点击可查看地点与发现次数。</p></section>`;
-  }
-
-  function searchBox(mapId) {
-    return `<div class="v58-place-search" data-map="${mapId}"><label for="${mapId}-query">搜索地点</label><div class="v58-search-line"><input type="search" id="${mapId}-query" class="v58-place-query" maxlength="180" placeholder="输入城市、公园或地址，如：杭州植物园" autocomplete="off"><button type="button" class="outlined-btn" data-action="v58-search-place">搜索地点</button></div><p class="v58-search-state" role="status" aria-live="polite"></p><div class="v58-search-results"></div></div>`;
-  }
-
-  function destroyMap(id) {
-    const map = maps.get(id);
-    if (map) { map.remove(); maps.delete(id); }
-  }
-
-  function mountMap(id, records) {
-    destroyMap(id);
-    const container = document.getElementById(id), located = records.filter(record => coordinate(record));
-    if (!container) return;
-    if (!window.L) { container.textContent = '地图暂时不可用；下方的地点记录仍可查看。'; return; }
-    const map = L.map(container, { scrollWheelZoom: false, zoomControl: false });
-    maps.set(id, map);
-    L.control.zoom({ position: 'topright', zoomInTitle: '放大地图', zoomOutTitle: '缩小地图' }).addTo(map);
-    const status = container.parentElement.querySelector('.v583-map-state'), retry = container.parentElement.querySelector('.v584-map-retry');
-    retry.hidden = true; status.textContent = '正在加载地图…';
-    const light = L.tileLayer(yiyuAPILink('/api/map-tile?v=5.8.4&z={z}&x={x}&y={y}'), { maxZoom: 18, attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a>' });
-    let failures = 0, usingFallback = false, fallbackTimer;
-    const connected = () => container.isConnected && maps.get(id) === map;
-    const fallbackError = () => {
-      if (!connected()) return;
-      status.textContent = '底图暂时无法加载，可重试；搜索地点和发现记录仍可使用。'; retry.hidden = false;
-    };
-    const useFallback = () => {
-      if (usingFallback || !connected()) return;
-      usingFallback = true;
-      clearTimeout(primaryTimer);
-      map.removeLayer(light);
-      const fallback = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '&copy; OpenStreetMap contributors' });
-      status.textContent = '正在尝试备用地图…';
-      fallbackTimer = setTimeout(fallbackError, 10000);
-      fallback.on('tileload', () => { clearTimeout(fallbackTimer); if (connected()) { status.textContent = ''; retry.hidden = true; } });
-      fallback.on('tileerror', fallbackError);
-      fallback.addTo(map);
-    };
-    const primaryTimer = setTimeout(useFallback, 10000);
-    map.on('unload', () => { clearTimeout(primaryTimer); clearTimeout(fallbackTimer); });
-    light.on('tileload', () => { failures = 0; clearTimeout(primaryTimer); if (connected() && !usingFallback) status.textContent = ''; });
-    light.on('tileerror', () => { if (++failures >= 3) useFallback(); });
-    light.addTo(map);
-    const pins = new Map();
-    for (const record of located) {
-      const position = coordinate(record), key = position.map(value => value.toFixed(4)).join(',');
-      if (!pins.has(key)) pins.set(key, { position, records: [] });
-      pins.get(key).records.push(record);
-    }
-    for (const item of pins.values()) {
-      const count = item.records.length;
-      const icon = L.divIcon({ className: 'v56-pin v583-pin', html: `<span><b>${count}</b></span>`, iconSize: [38, 38], iconAnchor: [19, 19] });
-      const rows = item.records.slice(0, 8).map(record => `<div><b>${esc(record.name || '待确认植物')}</b> · ${esc(record.location || '未记录地点')}<small>${esc(record.date || '日期未记录')}</small></div>`).join('');
-      L.marker(item.position, { icon }).addTo(map).bindPopup(`<div class="v56-map-popup">${rows}${count > 8 ? `<small>另有 ${count - 8} 条记录</small>` : ''}</div>`);
-    }
-    const bounds = located.map(record => coordinate(record));
-    const fit = () => {
-      if (!bounds.length) map.setView([35, 105], 4);
-      else if (bounds.length === 1) map.setView(bounds[0], 13);
-      else map.fitBounds(bounds, { padding: [38, 38], maxZoom: 13 });
-    };
-    mapFits.set(map, fit); fit();
-    setTimeout(() => { if (container.isConnected && maps.get(id) === map) map.invalidateSize(); }, 80);
-  }
-
   function selectedPoint(scope, point) {
-    const form = scope.closest('#sighting-form'), map = maps.get(scope.dataset.map);
-    if (form) {
-      form.querySelector('[name=location]').value = point.name;
-      form.querySelector('[name=lat]').value = String(point.lat);
-      form.querySelector('[name=lon]').value = String(point.lon);
-      form.querySelector('#v2-coord-state').textContent = `已选择：${point.name} · ${point.lat.toFixed(5)}, ${point.lon.toFixed(5)}（保存后加入足迹）`;
-    }
-    if (map) {
-      const old = searchMarkers.get(map); if (old) old.remove();
-      const marker = L.marker([point.lat, point.lon], { icon: L.divIcon({ className: 'v583-search-pin', html: `<span>${ico('pin', 19)}</span>`, iconSize: [42, 42], iconAnchor: [21, 42] }) }).addTo(map);
-      searchMarkers.set(map, marker);
-      map.setView([point.lat, point.lon], 16);
-      if (!form) {
-        marker.bindPopup(`<div class="v58-map-choice"><b>${esc(point.name)}</b><button type="button" class="outlined-btn" data-action="v58-record-place" data-name="${esc(point.name)}" data-lat="${point.lat}" data-lon="${point.lon}">在这里添加记录</button></div>`).openPopup();
-      }
-    }
-    scope.querySelector('.v58-search-state').textContent = form ? '地点与坐标已填入，保存后会显示在图鉴首页的足迹地图。' : '地图已移动到所选地点，可点击标记添加记录。';
+    const form = scope.closest('#sighting-form');
+    if (!form) return;
+    form.querySelector('[name=location]').value = point.name;
+    form.querySelector('[name=lat]').value = String(point.lat);
+    form.querySelector('[name=lon]').value = String(point.lon);
+    form.querySelector('#v2-coord-state').textContent = `已选择：${point.name} · ${point.lat.toFixed(5)}, ${point.lon.toFixed(5)}`;
+    scope.querySelector('.v58-search-state').textContent = '地点与坐标已填入，保存后会记在这次发现中。';
     scope.querySelector('.v58-search-results').replaceChildren();
   }
 
@@ -183,7 +99,7 @@ function sightingPhotos(record) {
     const input = row.querySelector('[name=location]'); input.classList.add('v58-place-query'); input.maxLength = 180;
     input.placeholder = '输入城市、公园或地址，再点“搜索地点”';
     row.insertAdjacentHTML('beforeend', '<button type="button" class="outlined-btn" data-action="v58-search-place">搜索地点</button>');
-    field.querySelector('.v4-location-map').textContent = '搜索并选中地点即可保存坐标；足迹地图统一在图鉴首页展示。';
+    field.querySelector('.v4-location-map').textContent = '可以搜索地点或使用手机定位，也可以只填写地点名称。';
     const coordStatus = form.querySelector('#v2-coord-state'); coordStatus.setAttribute('role', 'status');
     coordStatus.textContent = coordinate(Object.fromEntries(new FormData(form))) ? coordStatus.textContent : '可搜索地点并选择结果，或使用手机定位。';
     input.addEventListener('input', () => {
@@ -240,7 +156,7 @@ function sightingPhotos(record) {
     const matched = matchedGroups();
     const rows = matched.flatMap(group => group.records);
     const grid = page.querySelector('.catalog-grid');
-    if (grid) grid.innerHTML = matched.length ? matched.map(groupCard).join('') : empty('这里还没有发现档案', '记录一次植物相遇，足迹就会出现在这里。', '记录发现', 'new-sighting');
+    if (grid) grid.innerHTML = matched.length ? matched.map(groupCard).join('') : empty('这里还没有发现档案', '记下植物的名字、照片与相遇的故事。', '记录发现', 'new-sighting');
     const count = page.querySelector('.intro-row .subtle');
     if (count) count.textContent = `${matched.length} 种植物 · ${rows.length} 次发现`;
     const heading = page.querySelector('.intro-row .section-title');
@@ -251,15 +167,7 @@ function sightingPhotos(record) {
       if (sampleGrid?.classList.contains('catalog-grid')) sampleGrid.remove();
       sampleHeading.remove();
     }
-    page.querySelector('.toolbar')?.insertAdjacentHTML('afterend', mapSection(rows, atlasMapId, '发现足迹地图'));
     return root.innerHTML;
-  };
-
-  const oldRender = render;
-  render = function() {
-    destroyMap(atlasMapId);
-    oldRender();
-    if (ui.tab === 'atlas' && !window.yiyuPages?.active) mountMap(atlasMapId, matchedGroups().flatMap(group => group.records));
   };
 
   sightingDetail = function(id) {
@@ -342,24 +250,10 @@ function sightingPhotos(record) {
   const oldAct = act;
   act = async function(action, element) {
     const id = element.dataset.id;
-    if (action === 'v584-map-retry') return mountMap(element.dataset.map, matchedGroups().flatMap(group => group.records));
-    if (action === 'v583-map-fit') {
-      const map = maps.get(element.dataset.map);
-      if (map) {
-        searchMarkers.get(map)?.remove(); searchMarkers.delete(map); map.closePopup(); mapFits.get(map)?.();
-        element.closest('.v56-map-section').querySelector('.v58-search-state').textContent = '已返回全部发现足迹。';
-      }
-      return;
-    }
     if (action === 'v58-search-place') return searchPlace(element.closest('.v58-place-search'));
     if (action === 'v58-select-place') {
       const scope = element.closest('.v58-place-search'), point = searchStates.get(scope)?.results[Number(element.dataset.index)];
       if (point) selectedPoint(scope, { ...point, lat: Number(point.lat), lon: Number(point.lon) });
-      return;
-    }
-    if (action === 'v58-record-place') {
-      const point = coordinate(element.dataset); if (!point) return;
-      sightingForm(null, { location: element.dataset.name, lat: point[0], lon: point[1] });
       return;
     }
     if (action === 'v56-add-record') {

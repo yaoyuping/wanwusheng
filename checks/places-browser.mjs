@@ -7,14 +7,16 @@ const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', arg
 try {
   for (const width of [390, 1440]) {
     const context = await browser.newContext({ viewport: { width, height: 1000 }, serviceWorkers: 'block' });
-    const page = await context.newPage(), errors = [], queries = [];
+    const page = await context.newPage(), errors = [], queries = []; let mapRequests = 0;
     page.on('pageerror', error => errors.push(error.message));
     await page.addInitScript(() => {
+      // Isolate explicit location picking from the app's automatic weather GPS.
+      localStorage.setItem('yiyu-weather-location-preference-v4', JSON.stringify({ mode: 'fixed', lat: 30.274, lon: 120.155, label: '杭州' }));
       window.gpsCalls = 0;
       navigator.geolocation.getCurrentPosition = () => { window.gpsCalls++; };
     });
-    await page.route('https://tile.openstreetmap.org/**', route => route.fulfill({ body: tile, contentType: 'image/png' }));
-    await page.route('**/api/map-tile?*', route => route.fulfill({ body: tile, contentType: 'image/png' }));
+    await page.route('https://tile.openstreetmap.org/**', route => { mapRequests++; return route.fulfill({ body: tile, contentType: 'image/png' }); });
+    await page.route('**/api/map-tile?*', route => { mapRequests++; return route.fulfill({ body: tile, contentType: 'image/png' }); });
     await page.route('**/api/status', route => route.fulfill({ json: { ready: true, places: true } }));
     await page.route('**/api/places?*', route => {
       const query = new URL(route.request().url()).searchParams.get('q'); queries.push(query);
@@ -26,15 +28,14 @@ try {
     await page.waitForFunction(() => typeof state === 'object' && state !== null);
     const initialGpsCalls = await page.evaluate(() => window.gpsCalls);
     await page.evaluate(() => { state.sightings = []; go('atlas'); });
-    const overview = page.locator('.v58-place-search[data-map="v56-atlas-map"]');
-    assert.equal(await page.locator('#v56-atlas-map.leaflet-container').count(), 1, 'Map can be searched before the first sighting');
-    await overview.locator('input').fill('杭州植物园');
-    await overview.locator('input').press('Enter');
-    await overview.locator('.v58-place-result').first().waitFor();
-    assert.equal(await overview.locator('.v58-place-result img').count(), 0);
-    await overview.locator('.v58-place-result').first().click();
-    await page.locator('[data-action="v58-record-place"]').click();
+    assert.equal(await page.locator('.v56-map-section, #v56-atlas-map, .leaflet-container').count(), 0);
+    await page.locator('[data-action="new-sighting"]').first().click();
     const form = page.locator('#sighting-form'), picker = form.locator('.v58-place-search');
+    await form.locator('[name=location]').fill('杭州植物园');
+    await form.locator('[name=location]').press('Enter');
+    await picker.locator('.v58-place-result').first().waitFor();
+    assert.equal(await picker.locator('.v58-place-result img').count(), 0);
+    await picker.locator('.v58-place-result').first().click();
     assert.equal(await form.locator('.v56-map, .leaflet-container, iframe').count(), 0, 'Location forms contain no map');
     assert.equal(await form.locator('[name=location]').inputValue(), point.name);
     assert.equal(Number(await form.locator('[name=lat]').inputValue()), point.lat);
@@ -48,7 +49,7 @@ try {
     const stored = await page.evaluate(() => state.sightings[0]);
     assert.equal(stored.location, point.name); assert.equal(stored.lat, point.lat); assert.equal(stored.lon, point.lon);
     await page.evaluate(() => { go('atlas'); });
-    assert.equal(await page.locator('#v56-atlas-map .v56-pin').count(), 1);
+    assert.equal(await page.locator('.v56-map-section, #v56-atlas-map, .leaflet-container').count(), 0);
     await page.locator('.v56-group-card').click();
     assert.equal(await page.locator('.v56-record-page .v56-map').count(), 0);
     assert.equal(await page.locator('.v56-record-page a[href*="openstreetmap"], .v56-record-page iframe').count(), 0);
@@ -92,9 +93,10 @@ try {
     await page.waitForFunction(() => document.querySelector('#v2-coord-state').textContent.includes('位置权限被拒绝'));
     assert.equal(Number(await form.locator('[name=lat]').inputValue()), 30.3);
     assert.equal(await form.locator('[name=location]').evaluate(input => input.readOnly), false);
+    assert.equal(mapRequests, 0, 'Search and GPS work without requesting map tiles');
     assert.deepEqual(errors, []);
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
-    console.log(`${width}px: map only on overview, search, persistence, edit, errors, Enter, backup, GPS success and denial passed (${queries.length} searches)`);
+    console.log(`${width}px: no maps, location search, persistence, edit, errors, Enter, backup, GPS success and denial passed (${queries.length} searches)`);
     await context.close();
   }
 } finally { await browser.close(); }

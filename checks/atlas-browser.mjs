@@ -15,10 +15,10 @@ const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PAT
 try {
   for (const [device, viewport] of [['desktop', { width: 1440, height: 1100 }], ['mobile', { width: 390, height: 844 }]]) {
     const context = await browser.newContext({ viewport, serviceWorkers: 'block' });
-    const page = await context.newPage(), errors = []; let guideRequests = 0;
+    const page = await context.newPage(), errors = []; let guideRequests = 0, mapRequests = 0;
     page.on('pageerror', error => errors.push(error.message));
-    await page.route('https://tile.openstreetmap.org/**', route => route.fulfill({ body: tile, contentType: 'image/png' }));
-    await page.route('**/api/map-tile?*', route => route.fulfill({ body: tile, contentType: 'image/png' }));
+    await page.route('https://tile.openstreetmap.org/**', route => { mapRequests++; return route.fulfill({ body: tile, contentType: 'image/png' }); });
+    await page.route('**/api/map-tile?*', route => { mapRequests++; return route.fulfill({ body: tile, contentType: 'image/png' }); });
     await page.route('**/api/status', route => route.fulfill({ json: { ready: true, deepseek: true, species: true } }));
     await page.route('**/api/ai', route => {
       guideRequests++;
@@ -36,11 +36,11 @@ try {
       ];
       await save(); ui.tab = 'atlas'; render();
     }, photo);
-    await page.locator('#v56-atlas-map .v56-pin').first().waitFor();
     assert.equal(await page.locator('.v56-group-card').count(), 2);
-    assert.equal(await page.locator('#v56-atlas-map .v56-pin').count(), 3);
+    assert.equal(await page.locator('.v56-map-section, .leaflet-container, #v56-atlas-map').count(), 0);
+    assert.equal(mapRequests, 0, 'The discovery list makes no map-tile requests');
     assert.equal(await page.locator('.v50-atlas').getByText('植物小百科').count(), 0);
-    await page.screenshot({ path: join(output, `${device}-atlas-map.png`) });
+    await page.screenshot({ path: join(output, `${device}-atlas.png`) });
     await page.locator('.v56-group-card').filter({ hasText: '无患子' }).click();
     assert.equal(await page.locator('.v56-record-page .v56-visit').count(), 2);
     assert.equal(await page.locator('.v56-record-page .v56-place-card').count(), 2);
@@ -80,7 +80,7 @@ try {
     assert.ok((await page.locator('.v56-record-page').innerText()).includes('看到了树上的新果实'));
     assert.deepEqual(errors, []);
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
-    console.log(`${device}: grouped sightings, overview map without a detail map, add record, notes, separate guide, highlights and backup passed`);
+    console.log(`${device}: grouped sightings, no footprint map or tile requests, add record, notes, separate guide, highlights and backup passed`);
     await context.close();
   }
 } finally { await browser.close(); }

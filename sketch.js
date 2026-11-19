@@ -21,6 +21,35 @@
   v50BotanicalArt = function() {
     return '<figure class="sk-botanical-plate" aria-hidden="true"><img src="assets/botanical/camellia.webp" alt="" width="933" height="1400" fetchpriority="high"><figcaption>山茶 · 草木有时</figcaption></figure>';
   };
+  const illustration = kind => `<img class="fl-illustration" src="assets/botanical/${kind}.webp" alt="" aria-hidden="true" width="650" height="867">`;
+  function botanicalPage(view, kind, headingSelector, kicker, description, plant) {
+    return function() {
+      const root = document.createElement('div'); root.innerHTML = view();
+      if (kind === 'plants') root.querySelector('.v3-plants-banner')?.remove();
+      const heading = root.querySelector(headingSelector);
+      if (heading) {
+        heading.classList.add('fl-heading');
+        const copy = heading.firstElementChild;
+        copy.classList.add('fl-heading-copy');
+        copy.querySelectorAll('.v50-section-kicker').forEach(node => node.remove());
+        copy.insertAdjacentHTML('afterbegin', `<span class="fl-eyebrow">${kicker}</span>`);
+        let subtitle = copy.querySelector('p');
+        if (!subtitle) { subtitle = document.createElement('p'); copy.append(subtitle); }
+        subtitle.textContent = description;
+        heading.querySelector('.v50-identify-badge')?.remove();
+        if (kind === 'recognize') heading.querySelector('h1').innerHTML = '拍一张，<br>认识它。';
+        [...heading.children].filter(node => node.tagName === 'BUTTON').forEach(button => copy.append(button));
+        heading.insertAdjacentHTML('beforeend', illustration(plant));
+        // Lead with the illustrated title before weather or settings panels.
+        if (kind === 'settings' || kind === 'plants') root.prepend(heading);
+      }
+      return `<div class="fl-page fl-${kind}">${root.innerHTML}</div>`;
+    };
+  }
+  plantsView = botanicalPage(plantsView, 'plants', '.page-heading', '草木相伴', '把每一片新叶，写进生活。', 'fern');
+  atlasView = botanicalPage(atlasView, 'atlas', '.page-heading', '山野拾遗', '记下一次驻足，收藏一段相遇。', 'plum');
+  recognizeView = botanicalPage(recognizeView, 'recognize', '.v50-identify-head', '识得草木', '从一张照片，认识眼前的生命。', 'camellia');
+  settingsView = botanicalPage(settingsView, 'settings', '.page-heading', '手记小笺', '安放日常，也珍藏每一次记录。', 'plum');
   function tone(type) { return /浇水|盆土/.test(type) ? 'water' : /施肥|换盆/.test(type) ? 'feed' : /病|虫/.test(type) ? 'health' : 'note'; }
   function preview(plant, type) {
     return imageSrc(plant?.image) ? imgTag(plant.image, plant.name) : `<span class="sk-photo-placeholder">${v50Icon(tone(type) === 'water' ? 'drop' : 'sprout', 29)}</span>`;
@@ -71,7 +100,7 @@
       const date = dateOf(day);
       return `<section class="sk-day ${day === selected ? 'is-selected' : ''}" id="sk-day-${day}" data-day="${day}"><div class="sk-date-label"><span>周${weekdays[(date.getDay() + 6) % 7]}</span><strong>${date.getDate()}</strong><small>${date.getMonth() + 1}月</small>${day === stamp() ? '<em>今天</em>' : ''}</div><div class="sk-day-content">${tasks.map(task => taskCard(task, day)).join('')}${logs.length ? `<div class="sk-record-heading">${v50Icon('book', 16)} 养护记录 <span>${logs.length}</span></div>${logs.map(({ log, plant }) => logCard(log, plant)).join('')}` : ''}${!tasks.length && !logs.length ? `<div class="sk-day-empty">${sprig()}<b>${pendingOnly ? '这天暂无未完成待办' : '这一天，留点时间看看叶子'}</b><p>记录一点变化，就是照料的开始。</p><button type="button" data-action="v2-new-task" data-day="${day}">＋ 添一项养护</button></div>` : ''}</div></section>`;
     }).join('');
-    return `<div class="sk-care"><header class="sk-care-heading"><div><span class="sk-eyebrow">草木岁时 · 日常养护</span><h1>养护日历 ${sprig()}</h1></div><button type="button" class="sk-round" data-nav="home" aria-label="返回首页">${ico('home', 20)}</button></header>
+    return `<div class="sk-care"><header class="sk-care-heading fl-heading"><div class="fl-heading-copy"><span class="fl-eyebrow">草木岁时</span><h1>养护日历</h1><p>浇水、修枝，慢慢照料四季。</p></div>${illustration('fern')}<button type="button" class="sk-round" data-nav="home" aria-label="返回首页">${ico('home', 20)}</button></header>
       <div class="sk-calendar ${monthOpen ? 'is-expanded' : ''}"><div class="sk-calendar-top"><button type="button" class="sk-month-title" data-action="sk-toggle-month" aria-expanded="${monthOpen}" aria-controls="sk-month-panel">${Number(selected.slice(0, 4))}年${Number(selected.slice(5, 7))}月 <span>${monthOpen ? '⌃' : '⌄'}</span></button><div class="sk-week-actions"><button type="button" data-action="sk-prev-week" aria-label="上一周">‹</button><button type="button" data-action="v2-month-today">今天</button><button type="button" data-action="sk-next-week" aria-label="下一周">›</button></div></div>
       ${monthGrid(selected, taskDays, logDays)}
       <div class="sk-week" aria-label="本周日期">${days.map((day, i) => `<button type="button" class="sk-week-day ${day === selected ? 'selected' : ''} ${day === stamp() ? 'is-today' : ''}" data-action="v2-select-day" data-day="${day}" aria-label="${day}，星期${weekdays[i]}" aria-pressed="${day === selected}"><span>${weekdays[i]}</span><strong>${Number(day.slice(-2))}</strong><small>${esc(lunar(day))}</small><i class="${(taskDays.get(day) || []).length || (logDays.get(day) || []).length ? 'has-activity' : ''}"></i></button>`).join('')}</div></div>

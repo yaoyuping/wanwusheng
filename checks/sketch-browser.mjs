@@ -81,9 +81,14 @@ try {
     await page.locator('[data-action="v2-month-today"]').click();
     await page.screenshot({ path: `/tmp/wanwusheng-sketch-calendar-${width}.png` });
     await noOverflow();
-    for (const tab of ['home', 'plants', 'recognize', 'settings']) {
+    for (const tab of ['home', 'plants', 'atlas', 'recognize', 'settings']) {
       await page.evaluate(value => go(value), tab);
       assert.equal(await page.locator('body.sk-care-open').count(), 0);
+      if (tab !== 'home') {
+        await page.waitForFunction(() => document.querySelector('.fl-heading .fl-illustration')?.naturalWidth > 0);
+        assert.equal(await page.locator('.fl-heading').count(), 1);
+      }
+      assert.equal(await page.locator('.leaflet-container, .v56-map-section').count(), 0);
       await noOverflow();
     }
     await page.reload({ waitUntil: 'domcontentloaded' });
