@@ -319,8 +319,8 @@ body .sk-care-card .sk-task-delete.v59-delete { border: 0; border-bottom: 1px so
 .fl-home-folio .v50-section-head>div { flex: 1; }.fl-home-folio .v50-section-kicker { font-family: var(--sk-heading) !important; color: #8e7b5d !important; letter-spacing: .13em; }
 .fl-home-folio .v50-section-head h2 { font-size: 25px !important; }.fl-home-folio .v50-count { border-radius: 2px !important; background: #e9ebd8 !important; color: #5d7250 !important; font: 15px var(--sk-heading); border-bottom: 1px solid #c1c9ad; }
 .fl-home-folio .v50-text-link { color: #5a7050; border-bottom: 1px solid #aeb99b; border-radius: 0; font-size: 13px; min-height: 44px; background: none; }
-.fl-home-folio .v50-weather { background: #f4f1e3 !important; border: 0 !important; border-top: 1px solid #d5d2bb !important; border-bottom: 1px solid #d5d2bb !important; border-radius: 1px !important; margin-top: 25px; padding: 14px 8px; }
-.fl-home-folio .v50-weather-glyph { border: 0; background: #e8e5cd !important; border-radius: 3px 17px 4px 15px !important; }.fl-home-folio .v50-weather-reading b { font-family: var(--sk-heading); font-weight: 400; color: #52694c; }
+:is(.fl-home-folio,.fl-plants) .v50-weather { background: #f4f1e3 !important; border: 0 !important; border-top: 1px solid #d5d2bb !important; border-bottom: 1px solid #d5d2bb !important; border-radius: 1px !important; margin-top: 25px; padding: 14px 8px; }
+:is(.fl-home-folio,.fl-plants) .v50-weather-glyph { border: 0; background: #e8e5cd !important; border-radius: 3px 17px 4px 15px !important; }:is(.fl-home-folio,.fl-plants) .v50-weather-reading b { font-family: var(--sk-heading); font-weight: 400; color: #52694c; }
 .fl-home-folio .v50-today-panel { position: relative; border: 1px solid #d1d5be !important; border-radius: 3px 7px 2px 5px !important; box-shadow: 3px 3px 0 #e6e5d8 !important; }
 .fl-home-folio .v50-care-items { padding: 0 18px; }.fl-home-folio .v50-care-item { padding: 17px 0; border-bottom: 1px dashed #d8ddc7 !important; gap: 13px; }.fl-home-folio .v50-care-item:last-child { border-bottom: 0 !important; }
 .fl-home-folio .v50-task-symbol { border: 0; border-radius: 3px 12px 3px 10px !important; width: 44px; height: 44px; flex-shrink: 0; }.fl-home-folio .v50-care-text { min-width: 0; }.fl-home-folio .v50-care-text b { font: 16px/1.65 var(--sk-heading); overflow-wrap: anywhere; }.fl-home-folio .v50-care-text small { font: 12px/1.6 var(--sk-body); color: #727e66; }
@@ -547,6 +547,39 @@ body .sk-care-card .sk-task-delete.v59-delete { border: 0; border-bottom: 1px so
   .fl-recognize :is(.v52-panel-heading,.v53-panel-top) h2 { font-size: 18px !important; }.fl-recognize :is(.v52-plantnet-panel,.v53-deepseek-panel) { padding-inline: 11px !important; }.fl-capture-empty>strong { font-size: 21px !important; }
   .sk-month-title { font-size: 20px; }.sk-week-actions>button { min-width: 27px; }.sk-week-actions>button:nth-child(2) { padding: 0 6px; }.sk-week-day>strong { width: 30px; height: 34px; font-size: 22px; }
 }
+
+/* Softer touch controls: colour and spacing carry the hierarchy, without frames. */
+#modal-root .v2-species-head>.latin { display: none; }
+body :is(#app,#modal-root,.topbar) :is(.primary-btn,.outlined-btn,.ghost-btn,.top-add,.v50-primary,.sk-add-task,.sk-filter,.v3-detail-quick,.v3-detail-ai,.v2-text-button) {
+  border: 0 !important; border-radius: 12px 16px 12px 15px !important; box-shadow: none !important;
+  background: #e9eedf !important; color: #4c6643 !important;
+}
+body :is(#app,#modal-root,.topbar) :is(.primary-btn,.top-add,.v50-primary,.sk-add-task,.v3-detail-quick) { background: #536e50 !important; color: #fffdf3 !important; }
+body :is(#app,#modal-root,.topbar) :is(.primary-btn,.outlined-btn,.ghost-btn,.top-add,.v50-primary,.sk-add-task,.sk-filter,.v3-detail-quick,.v3-detail-ai,.v2-text-button):after { display: none !important; }
+body :is(#app,#modal-root,.topbar) :is(.primary-btn,.outlined-btn,.v50-primary,.sk-add-task,.sk-filter,.v3-detail-quick,.v3-detail-ai):active { transform: scale(.98) !important; box-shadow: none !important; }
+body :is(#app,#modal-root,.topbar) :is(.outlined-btn,.ghost-btn,.sk-filter,.v3-detail-ai):hover { background: #dfe7d4 !important; }
+body :is(#app,#modal-root,.topbar) :is(.primary-btn,.v50-primary,.sk-add-task,.v3-detail-quick):hover { background: #435e40 !important; }
+body .round-btn,body .sk-round { border: 0 !important; box-shadow: none !important; background: #e9eddf !important; border-radius: 50% !important; }
+body :is(#app,#modal-root) :is(.filter-chip,.v46-segment,.v4-tag-chip,.v4-tag-suggestion) { border: 0 !important; border-radius: 9px 12px 9px 11px !important; box-shadow: none !important; background: #edf0e4 !important; }
+body :is(#app,#modal-root) :is(.filter-chip.active,.filter-chip.selected,.v46-segment.active) { background: #dce6cc !important; color: #415c37 !important; box-shadow: none !important; }
+.fl-dialog .v4-tag-chip { min-height: 44px; gap: 10px; padding: 10px 13px; }.fl-dialog .v4-tag-chip>span { font: 11px var(--sk-body); color: #8e6450; }
+.fl-dialog :is(.v3-action-grid>button,.v2-care-option) { border: 0 !important; box-shadow: none !important; border-radius: 12px 16px 11px 15px !important; }.fl-dialog :is(.v3-action-grid>button,.v2-care-option):after { display: none; }
+.fl-plant-folio .v48-detail-help.fl-handbook button { border: 0 !important; box-shadow: none !important; background: #e9eedf !important; border-radius: 12px 18px 12px 16px; }.fl-plant-folio .v48-detail-help.fl-handbook button:nth-child(2) { background: #f0e7d7 !important; }
+.fl-record-folio .v56-visit-actions button { border: 0; box-shadow: none; background: transparent; color: #657653; padding-inline: 10px; }
+.fl-recognize .v51-engine { border: 0 !important; box-shadow: none !important; border-radius: 12px 17px 12px 15px !important; }.fl-recognize .v51-engine[aria-expanded=true] { border: 0 !important; background: #e4ebd6 !important; }.fl-recognize .v51-engine[aria-expanded=true]:after { border: 0; background: #d1dfbc; border-radius: 5px; transform: none; }
+.sk-week-actions>button:nth-child(2),.sk-month-controls>button { border: 0; border-radius: 10px; background: #e9eddd; }
+.sk-completion-control { border: 0; border-radius: 10px; }.sk-care-card .v59-task-check:before { border-radius: 50%; transform: none; }
+body :is(#app,#modal-root) :is(.danger-btn,.sk-delete) { border: 0 !important; box-shadow: none !important; background: transparent !important; color: #97634d !important; min-height: 44px; border-radius: 8px !important; }
+body :is(#app,#modal-root) :is(.danger-btn,.sk-delete):after { display: none !important; }
+.fl-library .v48-library-grid>button { border: 0 !important; box-shadow: none !important; border-radius: 12px 17px 12px 15px !important; }
+.fl-plants .v51-plants-weather { margin-bottom: 26px; }
+.fl-tag-tools { display: flex; justify-content: flex-end; margin: -8px 0 18px; }.fl-tag-tools button { border: 0; background: transparent; min-height: 44px; padding: 8px 2px 8px 14px; color: #657653; font-size: 14px; }.fl-tag-tools button>span { margin-left: 8px; }
+.v3-info-value .fl-tag-edit-hint { margin-top: 8px; font-size: 11px; color: #8c7659; }
+.fl-tag-manager>p { font-size: 13px; color: #718064; line-height: 1.8; margin: 0 0 20px; }
+.fl-tag-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 15px 0; border-bottom: 1px solid #dce1cf; }.fl-tag-row>div { display: grid; gap: 5px; min-width: 0; }.fl-tag-row strong { font: 20px var(--sk-heading); color: #516749; overflow-wrap: anywhere; }.fl-tag-row small { font-size: 11px; color: #78856b; }
+.fl-tag-delete { flex-shrink: 0; min-height: 44px; border: 0; padding: 10px 14px; border-radius: 10px; color: #96664e; background: #f3eadd; }
+.fl-tag-undo { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 22px; padding: 14px; background: #edf1e4; border-radius: 12px; font-size: 13px; color: #61724f; }.fl-tag-undo>span { overflow-wrap: anywhere; min-width: 0; }.fl-tag-undo button { border: 0; background: transparent; min-height: 44px; color: #42663a; text-decoration: underline; text-underline-offset: 4px; }
+@media(max-width:700px) { .fl-plant-form .fl-form-fields>.field[data-field=name] { grid-column: 1/-1; } }
 
 @media(prefers-reduced-motion:reduce) {
   body *,body *:before,body *:after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }

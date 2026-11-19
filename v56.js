@@ -186,8 +186,9 @@ function sightingPhotos(record) {
   function guideContent(entry) {
     const root = document.createElement('div');
     root.innerHTML = encyclopedia.guide(entry, '', false);
+    root.querySelectorAll('.latin').forEach(node => node.remove());
     const taxonomy = document.createElement('div'); taxonomy.className = 'v56-taxonomy';
-    taxonomy.innerHTML = [['科', entry.family], ['属', entry.genus], ['种', entry.latin]].filter(([, value]) => value).map(([label, value]) => `<div><small>${label}</small><strong>${esc(value)}</strong></div>`).join('');
+    taxonomy.innerHTML = [['科', entry.family], ['属', entry.genus]].filter(([, value]) => value).map(([label, value]) => `<div><small>${label}</small><strong>${esc(value)}</strong></div>`).join('');
     if (taxonomy.childElementCount) (root.querySelector('.v54-summary') || root.querySelector('.v54-guide-head'))?.after(taxonomy);
     return root.innerHTML;
   }

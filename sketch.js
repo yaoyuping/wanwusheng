@@ -25,7 +25,13 @@
   function botanicalPage(view, kind, headingSelector, kicker, description, plant) {
     return function() {
       const root = document.createElement('div'); root.innerHTML = view();
+      if (kind === 'plants' || kind === 'atlas') {
+        root.querySelectorAll('.latin').forEach(node => node.remove());
+        const search = root.querySelector('[data-search]');
+        if (search) search.placeholder = kind === 'plants' ? '搜索植物、位置或标签' : '搜索植物或发现地点';
+      }
       if (kind === 'plants') root.querySelector('.v3-plants-banner')?.remove();
+      if (kind === 'plants') root.querySelector('.toolbar')?.insertAdjacentHTML('afterend', '<div class="fl-tag-tools"><button type="button" data-action="fl-manage-tags">管理标签 <span aria-hidden="true">↗</span></button></div>');
       const heading = root.querySelector(headingSelector);
       if (heading) {
         heading.classList.add('fl-heading');
@@ -71,6 +77,12 @@
     return imageSrc(plant?.image) ? imgTag(plant.image, plant.name) : `<span class="sk-photo-placeholder">${careDrawing(type, 36)}</span>`;
   }
   const careDrawing = (type, size) => inkIcon(/拍照/.test(type) ? 'camera' : /观察|黄叶/.test(type) ? 'leaf' : tone(type), size);
+  const previousPlantCard = plantCard;
+  plantCard = function(...args) {
+    const root = document.createElement('div'); root.innerHTML = previousPlantCard(...args);
+    root.querySelectorAll('.latin').forEach(node => node.remove());
+    return root.innerHTML;
+  };
   const previousHome = homeView;
   homeView = function() {
     const root = document.createElement('div'); root.innerHTML = previousHome();
@@ -115,6 +127,7 @@
         row.dataset.field = key;
         if (['name', 'status', 'tags', 'interval', 'reminder', 'source'].includes(key)) row.classList.add('fl-info-wide');
         row.querySelector('.v3-info-icon').innerHTML = inkIcon(icons[key], 28);
+        if (key === 'tags') row.querySelector('.v3-info-value').insertAdjacentHTML('beforeend', '<small class="fl-tag-edit-hint">编辑 / 移除标签</small>');
         return row.outerHTML;
       }).join('');
       return `<section class="v3-info-card fl-info-sheet fl-sheet-${section.art}" aria-label="${section.title}"><header class="fl-sheet-heading"><span class="fl-chapter-number" aria-hidden="true">${['一', '二', '三'][index]}</span><div><h3>${section.title}</h3><p>${section.note}</p></div>${inkIcon(section.icon, 36)}</header><div class="fl-info-grid">${content}</div></section>`;
@@ -128,6 +141,7 @@
     const page = document.querySelector('.v3-plant-detail');
     if (page) {
       page.classList.add('fl-plant-folio');
+      page.querySelector('.v3-detail-cover-bottom>p')?.remove();
       const label = page.querySelector('.v3-detail-cover-label');
       if (label) label.textContent = '草木相伴 · 植物档案';
       const symbol = page.querySelector('.v3-insight>span');
@@ -152,6 +166,7 @@
     const page = document.querySelector('.v56-record-page');
     if (page) {
       page.classList.add('fl-record-folio');
+      page.querySelectorAll('.latin').forEach(node => node.remove());
       page.querySelector('.v56-record-cover>span').textContent = '山野拾遗 · 发现手账';
       page.querySelectorAll('.v56-section-title').forEach((heading, index) => {
         heading.insertAdjacentHTML('afterbegin', `<span class="fl-chapter-number" aria-hidden="true">${index ? '二' : '一'}</span>`);
@@ -186,13 +201,21 @@
     return result;
   };
   const previousPlantForm = plantForm;
+  function hideLatinField(form) {
+    const field = form?.querySelector('[name="latin"]');
+    if (!field) return;
+    const container = field.closest('.field');
+    // Keep the stored identification key for grouping and cached encyclopedia entries.
+    field.type = 'hidden'; form.append(field); container?.remove();
+  }
   plantForm = function(...args) {
     const result = previousPlantForm(...args), form = document.getElementById('plant-form');
     if (!form) return result;
+    hideLatinField(form);
     form.classList.add('fl-plant-form');
     const grid = form.querySelector('.form-grid'), fields = [...grid.children];
     const groups = [
-      ['一', '植物名笺', '记下名字，留一张初见的照片', 'leaf', ['name', 'latin', 'image']],
+      ['一', '植物名笺', '记下名字，留一张初见的照片', 'leaf', ['name', 'image']],
       ['二', '安家条件', '为它找到合适的一角', 'home', ['location', 'light', 'status']],
       ['三', '养护节奏', '观察盆土，让照料有据可循', 'water', ['interval', 'lastWatered', 'reminder']],
       ['四', '入园小记', '收藏与它有关的点滴', 'note', ['acquired', 'price', 'source', 'tags', 'notes']]
@@ -223,6 +246,26 @@
     });
     return result;
   };
+  const previousSightingForm = sightingForm;
+  sightingForm = function(...args) {
+    const result = previousSightingForm(...args); hideLatinField(document.getElementById('sighting-form')); return result;
+  };
+  const previousPaintTags = v4PaintTags;
+  v4PaintTags = function(form) {
+    previousPaintTags(form);
+    form.querySelectorAll('.v4-tag-selected [data-v4-tag]').forEach(button => {
+      button.setAttribute('aria-label', `移除标签：${button.dataset.v4Tag}`);
+      button.querySelector('span').textContent = '× 移除';
+    });
+  };
+  let removedTag = null;
+  function manageTags() {
+    const tags = v4TagBank();
+    modal('管理植物标签', `<div class="fl-tag-manager"><p>删除标签会同时从使用它的植物中移除，植物档案会保留。</p>${tags.length ? tags.map(tag => {
+      const count = state.plants.filter(plant => v4SplitTags(plant.tags).includes(tag)).length;
+      return `<div class="fl-tag-row"><div><strong>${esc(tag)}</strong><small>${count ? `${count} 株植物正在使用` : '保存在可选标签中'}</small></div><button type="button" class="fl-tag-delete" data-action="fl-delete-tag" data-tag="${esc(tag)}" aria-label="删除标签：${esc(tag)}">删除</button></div>`;
+    }).join('') : '<p class="fl-tag-empty">还没有保存的标签，可以在植物档案中添加。</p>'}${removedTag ? `<div class="fl-tag-undo" role="status"><span>已删除「${esc(removedTag.tag)}」</span><button type="button" data-action="fl-undo-tag">撤销删除</button></div>` : ''}</div>`);
+  }
   const capturePlaceholder = (title, hint) => `<span class="fl-capture-drawing">${inkIcon('camera', 60)}</span><strong>${title}</strong><small>${hint}</small>`;
   const previousRecognize = recognizeView;
   recognizeView = function() {
@@ -362,6 +405,30 @@
   };
   const oldAct = act;
   act = async function(action, element) {
+    if (action === 'fl-manage-tags') { manageTags(); return; }
+    if (action === 'fl-delete-tag') {
+      const tag = element.dataset.tag;
+      if (!v4TagBank().includes(tag)) return;
+      const affected = state.plants.filter(plant => v4SplitTags(plant.tags).includes(tag));
+      if (!confirm(`删除「${tag}」标签${affected.length ? `，并从 ${affected.length} 株植物中移除` : ''}？植物档案会保留，删除后可以撤销。`)) return;
+      const beforeLibrary = state.tagLibrary;
+      const beforeTags = affected.map(plant => ({ plant, tags: plant.tags }));
+      state.tagLibrary = v4Dedup([...(state.tagLibrary || []), ...state.plants.flatMap(plant => v4SplitTags(plant.tags))]).filter(value => value !== tag);
+      affected.forEach(plant => { plant.tags = v4SplitTags(plant.tags).filter(value => value !== tag).join(' / '); });
+      try { await save(); } catch (error) { state.tagLibrary = beforeLibrary; beforeTags.forEach(item => { item.plant.tags = item.tags; }); throw error; }
+      removedTag = { tag, ids: affected.map(plant => plant.id) };
+      if (ui.filter === 'tag:' + tag) ui.filter = 'all';
+      render(); manageTags(); return;
+    }
+    if (action === 'fl-undo-tag' && removedTag) {
+      const item = removedTag, library = state.tagLibrary;
+      const affected = state.plants.filter(plant => item.ids.includes(plant.id));
+      const previous = affected.map(plant => ({ plant, tags: plant.tags }));
+      state.tagLibrary = v4Dedup([...(state.tagLibrary || []), item.tag]);
+      affected.forEach(plant => { plant.tags = v4Dedup([...v4SplitTags(plant.tags), item.tag]).join(' / '); });
+      try { await save(); } catch (error) { state.tagLibrary = library; previous.forEach(row => { row.plant.tags = row.tags; }); throw error; }
+      removedTag = null; render(); manageTags(); return;
+    }
     if (action === 'sk-toggle-month') { monthOpen = !monthOpen; ui.calendarMonth = (ui.selectedDay || stamp()).slice(0, 7); render(); return; }
     if (action === 'sk-filter-pending') { pendingOnly = !pendingOnly; render(); return; }
     if (action === 'sk-prev-week' || action === 'sk-next-week') {
