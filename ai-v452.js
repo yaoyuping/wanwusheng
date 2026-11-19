@@ -6,21 +6,40 @@ ui.yiyuSpeciesQuery='';ui.yiyuSpeciesResults=null;ui.yiyuSpeciesError='';ui.yiyu
 function yiyuAPIHost(){try{const raw=(localStorage.getItem(YIYU_AI_URL_KEY)||'').trim();if(!raw)return location.protocol==='file:'||location.hostname.endsWith('github.io')||location.hostname.endsWith('netlify.app')?null:location.origin;
  const u=new URL(raw);if(u.protocol!=='https:'&&!(u.hostname==='localhost'||u.hostname==='127.0.0.1'))return null;if(u.username||u.password||u.search||u.hash||u.pathname!=='/')return null;return u.origin;
  }catch{return null}}
-function yiyuAPILink(path){const host=yiyuAPIHost();if(!host)throw Error('请先在「我的 → AI 服务连接」填写 HTTPS API 地址（或将整个网站部署在 Vercel）。');return host+path;}
+function yiyuAPILink(path){const host=yiyuAPIHost();if(!host)throw Error('请先在「设置与备份 → AI 服务连接」填写 HTTPS 后端地址。');return host+path;}
 function yiyuPassword(){try{return sessionStorage.getItem(YIYU_AI_PASSWORD_KEY)||''}catch{return ''}}
-function yiyuApiStatusLabel(x){if(!yiyuAPIHost())return '待配置后端地址';if(!x||x.offline)return '无法连接后端';if(!x.ready)return '请先在后端设置访问口令';return [x.plantnet?'Pl@ntNet ✓':'Pl@ntNet 未启用',x.deepseek?'DeepSeek ✓':'DeepSeek 未启用',x.species?'GBIF ✓':'GBIF 未启用'].join(' · ')}
+function yiyuApiStatusLabel(x){if(!yiyuAPIHost())return '待配置后端地址';if(!x||x.offline)return x?.error||'无法连接后端';if(!x.ready)return '请先在后端设置访问口令';return [x.plantnet?'Pl@ntNet ✓':'Pl@ntNet 未启用',x.deepseek?'DeepSeek ✓':'DeepSeek 未启用',x.species?'GBIF ✓':'GBIF 未启用'].join(' · ')}
+function yiyuConnectionError(error){
+ if(error?.name==='AbortError')return Error('服务响应超时，请稍后重试。');
+ if(error instanceof TypeError||/load failed|failed to fetch|networkerror/i.test(error?.message||''))return Error(navigator.onLine===false?'当前设备未联网，请联网后重试。':'无法连接 AI 后端，可能是网络不可达或服务已暂停。请在「设置与备份 → AI 服务连接」检查服务状态。');
+ return error;
+}
+async function yiyuReadResponse(response){
+ const raw=await response.text();let result;try{result=JSON.parse(raw)}catch{}
+ if(!response.ok){
+  if(response.headers.get('x-vercel-error')==='DEPLOYMENT_DISABLED'||/DEPLOYMENT_DISABLED/.test(raw))throw Error('Vercel 已停用 AI 后端（DEPLOYMENT_DISABLED），需在 Vercel 恢复服务后才能更新百科。');
+  if(response.status===402)throw Error('AI 后端暂不可用（402），请到 Vercel 查看项目状态、用量与账单。');
+  if(response.status===401)throw Error('访问口令未设置或已失效，请在「设置与备份 → AI 服务连接」重新保存口令。');
+  throw Error(typeof result?.error==='string'?result.error:`接口调用失败 (${response.status})`);
+ }
+ if(!result||typeof result!=='object'||Array.isArray(result))throw Error('服务没有返回有效数据，请检查 AI 后端地址后重试。');
+ return result;
+}
 // Override earlier fixed same-origin APIs so github.io static frontend can use a secured external Vercel backend.
 v2staticHosting=function(){return !yiyuAPIHost()};
 v2status=async function(){
  const api=yiyuAPIHost();if(!api){ui.apiStatus={offline:true,deepseek:false,plantnet:false};return ui.apiStatus}
- try{const response=await fetch(yiyuAPILink('/api/status'),{cache:'no-store'});if(!response.ok)throw Error('无法访问服务');ui.apiStatus=await response.json();ui.apiStatus.offline=false;return ui.apiStatus}
- catch(e){ui.apiStatus={offline:true,deepseek:false,plantnet:false};return ui.apiStatus}
+ const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
+ try{const response=await fetch(yiyuAPILink('/api/status'),{cache:'no-store',signal:controller.signal});ui.apiStatus=await yiyuReadResponse(response);ui.apiStatus.offline=false;return ui.apiStatus}
+ catch(e){ui.apiStatus={offline:true,deepseek:false,plantnet:false,error:yiyuConnectionError(e).message};return ui.apiStatus}
+ finally{clearTimeout(timeout)}
 };
 v2post=async function(endpoint,data){
- const response=await fetch(yiyuAPILink(endpoint),{method:'POST',headers:{'Content-Type':'application/json','X-Yiyu-Password':yiyuPassword()},body:JSON.stringify(data)});
- let result={};try{result=await response.json()}catch{}
- if(!response.ok)throw Error(result.error||`接口调用失败 (${response.status})`);
- return result;
+ const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),70000);
+ try{
+  const response=await fetch(yiyuAPILink(endpoint),{method:'POST',headers:{'Content-Type':'application/json','X-Yiyu-Password':yiyuPassword()},body:JSON.stringify(data),signal:controller.signal});
+  return await yiyuReadResponse(response);
+ }catch(error){throw yiyuConnectionError(error)}finally{clearTimeout(timeout)}
 };
 // No browser-side API key, no direct call from GitHub Pages to Pl@ntNet.
 identify=async function(){

@@ -210,7 +210,7 @@ html body :is(#app,#modal-root) :is(.filter-chip.active,.filter-chip.selected,.v
 html body :is(#app,#modal-root) :is(.danger-btn,.sk-delete,.fl-tag-delete) { color: #964b3b !important; }
 html body :is(#app,#modal-root) :is(input,textarea,select):not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=file]) { background-color: #eeeade !important; color: #384d3e; }
 html body :is(#app,#modal-root) .searchbox { background: #fffaf0 !important; }
-html body :is(#app,#modal-root) .searchbox input { background: transparent !important; }
+html body :is(#app,#modal-root) .searchbox input:not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=file]) { background: transparent !important; }
 html body #modal-root .modal-header { background: #ede4d0 !important; }
 html body #modal-root .v48-ai-prompts>button { background: #e5eadb !important; color: #43593e !important; }
 
@@ -257,6 +257,67 @@ html body .side-nav .nav-btn.active { background: #ccdbc4 !important; color: #2e
 html body .bottom-nav { background: #fff9ee !important; }
 html body .bottom-nav button.active { color: #8e4938 !important; background: #f1e1cf; }
 html body .bottom-nav button.active::after { background: #9b5140; }
+
+/* One continuous paper surface: botanical drawings flow into the content. */
+html body #app :is(.v50-hero,.fl-heading) {
+  background: radial-gradient(ellipse 58% 48% at 75% 50%,#dce2c588,transparent),radial-gradient(ellipse 58% 46% at 25% 50%,#eed8b477,transparent) !important;
+  border-radius: 0 !important;
+}
+html body #app :is(.fl-atlas,.fl-settings) .fl-heading {
+  background: radial-gradient(ellipse 58% 48% at 75% 50%,#e6cbc080,transparent),radial-gradient(ellipse 58% 46% at 25% 50%,#efdfc055,transparent) !important;
+}
+html body #app .fl-recognize .fl-heading {
+  background: radial-gradient(ellipse 58% 48% at 75% 50%,#d4dfc688,transparent),radial-gradient(ellipse 58% 46% at 25% 50%,#e9d9c166,transparent) !important;
+}
+html body #app .fl-heading::after { display: none; }
+html body #app :is(.fl-illustration,.sk-botanical-plate img) {
+  mix-blend-mode: multiply;
+  -webkit-mask-image: linear-gradient(to bottom,#000 78%,transparent 100%);
+  mask-image: linear-gradient(to bottom,#000 78%,transparent 100%);
+}
+html body #app .detail-page { background: #f7f1e5; }
+html body #app :is(.fl-plant-folio,.fl-record-folio,.v3-plant-body,.v56-record-page,.v56-encyclopedia) { background: transparent !important; }
+html body #app :is(.v3-info-card,.v3-profile-notes,.v56-visit,.v54-guide,.v54-chapters>details,.v52-plantnet-panel,.v53-deepseek-panel) {
+  background: transparent !important; border-radius: 0 !important;
+}
+html body #app :is(.v3-info-card,.v56-visit,.v54-chapters>details) { border-bottom: 1px solid #cbb99666 !important; }
+html body #app .fl-sheet-heading { border-radius: 0; background-color: transparent !important; }
+html body #app .fl-sheet-plum .fl-sheet-heading { background: url('assets/botanical/plum.webp') right center/100px auto no-repeat; }
+html body #app .fl-sheet-fern .fl-sheet-heading { background: url('assets/botanical/fern.webp') right center/86px auto no-repeat; }
+html body #app .fl-sheet-camellia .fl-sheet-heading { background: url('assets/botanical/camellia.webp') right center/72px auto no-repeat; }
+html body #app .v3-info-icon { background: transparent !important; }
+html body #app :is(.v56-place-card,.v56-taxonomy,.v54-summary) {
+  background: radial-gradient(ellipse at 30% 50%,#dfe6d2aa,transparent 85%) !important;
+}
+html body #app .v50-today-panel { background: #fffbf377 !important; }
+html body #app :is(.v50-weather,.v50-today-mini) { background: linear-gradient(90deg,#ebdbbc88,#ebdbbc33,transparent) !important; }
+html body #app .v50-shortcuts>button {
+  background: radial-gradient(ellipse at 30% 50%,#dae5cfbb,transparent 85%) !important;
+  border-radius: 0 !important;
+}
+html body #app .v50-shortcuts>button:nth-child(2) { background: radial-gradient(ellipse at 30% 50%,#edddbcbb,transparent 85%) !important; }
+html body #app .v50-shortcuts>button:nth-child(3) { background: radial-gradient(ellipse at 30% 50%,#ebd3c4bb,transparent 85%) !important; }
+html body #app .v50-shortcuts>button:nth-child(4) { background: radial-gradient(ellipse at 30% 50%,#d2e3d9bb,transparent 85%) !important; }
+html body #app .v50-action-illustration { background: transparent !important; }
+html body #app :is(.sk-calendar,.sk-care-roster) { background: #fffaf080 !important; }
+html body #app .sk-care-card { background: linear-gradient(115deg,#fffaf099,var(--card-wash)) !important; border-radius: 24px 10px 28px 14px !important; }
+html body #app .sk-plant-link::after { display: none; }
+html body :is(#app,#modal-root) :is(#rec-dropzone,.v53-ai-photo-frame,.fl-assistant-photo) {
+  background: radial-gradient(ellipse at 60% 55%,#d5e1c7bb,transparent 80%) !important;
+  border-radius: 0 !important;
+}
+html body #app :is(.v52-plantnet-panel,.v53-deepseek-panel) { padding-inline: 8px !important; }
+html body #app .v51-engine { background: #dae4cbaa !important; border-radius: 20px 7px 22px 9px !important; }
+html body #app .v51-engine-secondary { background: #ebd8c9aa !important; }
+html body #app .v51-engine[aria-expanded=true] { background: #c9dbc0 !important; }
+html body #app .v51-engine-secondary[aria-expanded=true] { background: #e6c8b8 !important; }
+html body #app .fl-settings :is(.panel,.yiyu-vault) { background: #fffaf077 !important; }
+html body :is(#app,#modal-root,.topbar) :is(.primary-btn,.v50-primary,.sk-add-task,.v3-detail-quick) { border-radius: 18px 8px 20px 10px !important; }
+html body :is(#app,#modal-root,.topbar) :is(.outlined-btn,.ghost-btn,.sk-filter,.v3-detail-ai) { background: #eadbc299 !important; border-radius: 16px 7px 19px 8px !important; }
+html body :is(#app,#modal-root) :is(.v50-text-link,.sk-plant-link,.v56-visit-actions button,.v48-bottom-actions .outlined-btn) { background: transparent !important; }
+html body #modal-root .modal { background: #fbf6ea !important; }
+html body #modal-root .modal-header { background: linear-gradient(90deg,#ede0c877,transparent) !important; }
+html body .bottom-nav button.active { background: radial-gradient(ellipse at center,#edd4bacc,transparent 75%); }
 @media(max-width:700px) {
   :root { --ui-radius: 18px; }
   html body #modal-root .modal { border-radius: 20px !important; }
