@@ -38,6 +38,7 @@
   function list(tab, replace = false) {
     snapshot(); closeModal(); current = null;
     ui.tab = listTabs.has(tab) ? tab : 'home'; ui.search = ''; ui.atlasSearch = '';
+    if (ui.tab === 'care') window.yiyuCalendar?.reset();
     write('#' + ui.tab, replace); mode(false); render();
     window.scrollTo({ top: 0, behavior: 'instant' });
   }
@@ -94,6 +95,7 @@
       const route = parse(); current = route.kind ? route : null;
       ui.tab = current ? parentTab(current) : route.tab;
       if (history.state?.yiyuPage?.view) Object.assign(ui, history.state.yiyuPage.view);
+      if (!current && ui.tab === 'care') window.yiyuCalendar?.reset();
     }
     // Older actions can switch tabs directly; keep those actions compatible.
     if (current && ui.tab !== parentTab(current)) { current = null; write('#' + ui.tab, true); }

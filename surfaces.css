@@ -238,6 +238,12 @@ html body #app .sk-prune { --card-ink: #546535; --card-wash: #e3e8ca; }
 html body #app .sk-care-card { background: linear-gradient(115deg,#fffaf0,var(--card-wash)) !important; }
 html body #app .sk-day-empty { background: #e8ecda; }
 html body #app .sk-card-drawing { opacity: .65; }
+html body #app .sk-priority-heading { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px 12px; margin: 0 0 16px; }
+html body #app .sk-priority-heading h3 { font: 22px/1.5 var(--sk-heading); color: #315e4c; margin: 0; }
+html body #app .sk-priority-heading button { background: transparent; color: #84533c; min-height: 44px; padding: 8px 0; font-size: 13px; }
+html body #app .sk-other-days { margin: 30px 0 24px; padding-top: 22px; border-top: 1px solid #d5c7ad; }
+html body #app .sk-other-days h3 { font: 24px/1.5 var(--sk-heading); color: #765338; margin: 0 0 6px; }
+html body #app .sk-other-days p { margin: 0; font-size: 12px; line-height: 1.8; color: #626c5e; }
 html body #app :is(#rec-dropzone,.v53-ai-photo-frame),html body #modal-root .fl-assistant-photo { background: radial-gradient(ellipse at 80% 80%,#cfdbc3,transparent 65%),#e8eddb !important; }
 html body #app .v51-engine { background: #dce7d6 !important; }
 html body #app .v51-engine-secondary { background: #f0ddce !important; }

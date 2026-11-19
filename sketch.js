@@ -6,6 +6,12 @@
   const dateOf = day => new Date(day + 'T12:00:00');
   const weekStart = day => v2plusDate(day, -(dateOf(day).getDay() + 6) % 7);
   let monthOpen = false, pendingOnly = false, lunarFormat;
+  window.yiyuCalendar = {
+    reset() {
+      ui.selectedDay = stamp(); ui.calendarMonth = ui.selectedDay.slice(0, 7);
+      monthOpen = false; pendingOnly = false;
+    }
+  };
   try { lunarFormat = new Intl.DateTimeFormat('zh-CN-u-ca-chinese', { day: 'numeric', month: 'long' }); } catch { /* Optional lunar labels. */ }
   function lunar(day) {
     if (!lunarFormat) return '';
@@ -364,7 +370,9 @@
   }
   careView = function() {
     if (window.yiyuCare.normalize()) void save();
-    const selected = validDay(ui.selectedDay) ? ui.selectedDay : stamp(), start = weekStart(selected), end = v2plusDate(start, 6);
+    const today = stamp(), tomorrow = v2plusDate(today, 1);
+    const selected = validDay(ui.selectedDay) ? ui.selectedDay : today, start = weekStart(selected), end = v2plusDate(start, 6);
+    const todayFirst = selected === today;
     const days = Array.from({ length: 7 }, (_, i) => v2plusDate(start, i));
     const taskDays = new Map(), logDays = new Map();
     for (const plant of state.plants) for (const log of plant.logs || []) {
@@ -373,14 +381,18 @@
       logDays.get(log.date).push({ log, plant });
     }
     // Include overdue manual tasks before the visible week when viewing today.
-    const overdueDays = selected === stamp() ? [...new Set((state.tasks || []).filter(task => !task.done && validDay(task.date) && task.date < start).map(task => task.date))].sort() : [];
+    const overdueDays = todayFirst ? [...new Set((state.tasks || []).filter(task => !task.done && validDay(task.date) && task.date < start).map(task => task.date))].sort() : [];
     const month = ui.calendarMonth || selected.slice(0, 7), gridStart = weekStart(month + '-01');
-    for (const day of new Set([...days, ...overdueDays, ...Array.from({ length: 42 }, (_, i) => v2plusDate(gridStart, i))])) taskDays.set(day, v2dayTasks(day));
-    const visible = [...overdueDays, ...days];
-    const taskCount = visible.reduce((n, day) => n + (taskDays.get(day) || []).filter(task => !task.done).length, 0);
+    // Tomorrow must be included even when it belongs to the next week/month/year.
+    const visible = todayFirst ? [today, tomorrow, ...[...overdueDays, ...days].filter(day => day !== today && day !== tomorrow)] : days;
+    for (const day of new Set([...visible, ...Array.from({ length: 42 }, (_, i) => v2plusDate(gridStart, i))])) taskDays.set(day, v2dayTasks(day));
+    const pendingCount = day => (taskDays.get(day) || []).filter(task => !task.done).length;
+    const taskCount = visible.reduce((n, day) => n + pendingCount(day), 0);
     const groups = visible.map(day => {
-      const dayTasks = (taskDays.get(day) || []).filter(task => (!overdueDays.includes(day) || !task.done) && (!pendingOnly || !task.done));
-      const logs = pendingOnly || overdueDays.includes(day) ? [] : (logDays.get(day) || []).slice().sort((a, b) => (b.log.time || '').localeCompare(a.log.time || ''));
+      const tomorrowPreview = todayFirst && day === tomorrow;
+      const onlyPending = pendingOnly || overdueDays.includes(day) || tomorrowPreview;
+      const dayTasks = (taskDays.get(day) || []).filter(task => !onlyPending || !task.done);
+      const logs = onlyPending ? [] : (logDays.get(day) || []).slice().sort((a, b) => (b.log.time || '').localeCompare(a.log.time || ''));
       // A completed automatic task and its log refer to the same care event.
       // Render it once in the records section, without modifying saved history.
       const linkedTask = (plant, log) => dayTasks.find(task => task.generated && task.done && task.plantId === plant.id && task.logId === log.id);
@@ -389,16 +401,19 @@
         const linked = linkedTask(plant, log);
         return linked ? taskCard(linked, day, log) : logCard(log, plant);
       }).join('');
-      if (!tasks.length && !logs.length && day !== selected) return '';
+      if (!tasks.length && !logs.length && day !== selected && !tomorrowPreview) return '';
       const date = dateOf(day);
-      return `<section class="sk-day ${day === selected ? 'is-selected' : ''}" id="sk-day-${day}" data-day="${day}"><div class="sk-date-label"><span>周${weekdays[(date.getDay() + 6) % 7]}</span><strong>${date.getDate()}</strong><small>${date.getMonth() + 1}月</small>${day === stamp() ? '<em>今天</em>' : ''}</div><div class="sk-day-content">${tasks.map(task => taskCard(task, day)).join('')}${logs.length ? `<div class="sk-record-heading">${v50Icon('book', 16)} 养护记录 <span>${logs.length}</span></div>${recordCards}` : ''}${!tasks.length && !logs.length ? `<div class="sk-day-empty">${sprig()}<b>${pendingOnly ? '这天暂无未完成待办' : '这一天，留点时间看看叶子'}</b><p>记录一点变化，就是照料的开始。</p><button type="button" data-action="v2-new-task" data-day="${day}">＋ 添一项养护</button></div>` : ''}</div></section>`;
-    }).join('');
+      const priorityHeading = todayFirst && (day === today || tomorrowPreview) ? `<div class="sk-priority-heading"><h3>${tomorrowPreview ? '明天 · 待完成' : '今天的照料'}</h3>${tomorrowPreview ? `<button type="button" data-action="v2-select-day" data-day="${day}">查看当天全部 ↗</button>` : ''}</div>` : '';
+      return `<section class="sk-day ${day === selected ? 'is-selected' : ''}" id="sk-day-${day}" data-day="${day}"><div class="sk-date-label"><span>周${weekdays[(date.getDay() + 6) % 7]}</span><strong>${date.getDate()}</strong><small>${date.getMonth() + 1}月</small>${day === today ? '<em>今天</em>' : day === tomorrow ? '<em>明天</em>' : ''}</div><div class="sk-day-content">${priorityHeading}${tasks.map(task => taskCard(task, day)).join('')}${logs.length ? `<div class="sk-record-heading">${v50Icon('book', 16)} 养护记录 <span>${logs.length}</span></div>${recordCards}` : ''}${!tasks.length && !logs.length ? `<div class="sk-day-empty">${sprig()}<b>${tomorrowPreview ? '明天暂无待完成养护' : pendingOnly ? '这天暂无未完成待办' : '这一天，留点时间看看叶子'}</b><p>${tomorrowPreview ? '提前安排，明天从容照料。' : '记录一点变化，就是照料的开始。'}</p><button type="button" data-action="v2-new-task" data-day="${day}">${tomorrowPreview ? '＋ 安排明天的养护' : '＋ 添一项养护'}</button></div>` : ''}</div></section>`;
+    });
+    const laterGroups = todayFirst ? groups.slice(2).join('') : '';
+    const agenda = todayFirst ? groups.slice(0, 2).join('') + (laterGroups ? `<div class="sk-other-days"><h3>其他日期</h3><p>本周记录与之前未完成的待办 · ${taskCount - pendingCount(today) - pendingCount(tomorrow)} 项待完成</p></div>${laterGroups}` : '') : groups.join('');
     return `<div class="sk-care"><header class="sk-care-heading fl-heading"><div class="fl-heading-copy"><span class="fl-eyebrow">草木岁时</span><h1>养护日历</h1><p>浇水、修枝，慢慢照料四季。</p></div>${illustration('fern')}<button type="button" class="sk-round" data-nav="home" aria-label="返回首页">${ico('home', 20)}</button></header>
       <div class="sk-calendar ${monthOpen ? 'is-expanded' : ''}"><div class="sk-calendar-top"><button type="button" class="sk-month-title" data-action="sk-toggle-month" aria-expanded="${monthOpen}" aria-controls="sk-month-panel">${Number(selected.slice(0, 4))}年${Number(selected.slice(5, 7))}月 <span>${monthOpen ? '⌃' : '⌄'}</span></button><div class="sk-week-actions"><button type="button" data-action="sk-prev-week" aria-label="上一周">‹</button><button type="button" data-action="v2-month-today">今天</button><button type="button" data-action="sk-next-week" aria-label="下一周">›</button></div></div>
       ${monthGrid(selected, taskDays, logDays)}
       <div class="sk-week" aria-label="本周日期">${days.map((day, i) => `<button type="button" class="sk-week-day ${day === selected ? 'selected' : ''} ${day === stamp() ? 'is-today' : ''}" data-action="v2-select-day" data-day="${day}" aria-label="${day}，星期${weekdays[i]}" aria-pressed="${day === selected}"><span>${weekdays[i]}</span><strong>${Number(day.slice(-2))}</strong><small>${esc(lunar(day))}</small><i class="${(taskDays.get(day) || []).length || (logDays.get(day) || []).length ? 'has-activity' : ''}"></i></button>`).join('')}</div></div>
-      <div class="sk-agenda-heading"><div><h2>本周的照料</h2><p>${v2date(start)} — ${v2date(end)} · ${taskCount} 项待完成${overdueDays.length ? '，含之前未完成的待办' : ''}</p></div><div class="sk-agenda-tools"><button type="button" class="sk-filter ${pendingOnly ? 'active' : ''}" data-action="sk-filter-pending" aria-pressed="${pendingOnly}">${v50Icon('check', 16)} 只看待办</button><button type="button" class="sk-add-task" data-action="v2-new-task" data-day="${selected}" aria-label="添加养护待办">${ico('plus', 18)}<span>新增待办</span></button></div></div>
-      <div class="sk-agenda">${groups}</div>
+      <div class="sk-agenda-heading"><div><h2>${todayFirst ? '今天与明天' : '本周的照料'}</h2><p>${todayFirst ? `今天 ${pendingCount(today)} 项待完成 · 明天 ${pendingCount(tomorrow)} 项待完成` : `${v2date(start)} — ${v2date(end)} · ${taskCount} 项待完成`}</p></div><div class="sk-agenda-tools"><button type="button" class="sk-filter ${pendingOnly ? 'active' : ''}" data-action="sk-filter-pending" aria-pressed="${pendingOnly}">${v50Icon('check', 16)} 只看待办</button><button type="button" class="sk-add-task" data-action="v2-new-task" data-day="${selected}" aria-label="添加养护待办">${ico('plus', 18)}<span>新增待办</span></button></div></div>
+      <div class="sk-agenda">${agenda}</div>
       <details class="sk-care-roster"><summary>${v50Icon('sprout', 21)} 植物养护清单 <span>${state.plants.length} 株</span></summary><div class="care-list">${state.plants.length ? state.plants.map(careItem).join('') : '<p>添一株植物，把照料的日常记在这里。</p>'}</div></details>
       <p class="sk-care-note">${sprig()} 每次检查后，记下「已浇水」或「仅检查」，让下一次提醒更贴近植物的节奏。</p>
     </div>`;
