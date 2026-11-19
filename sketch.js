@@ -61,7 +61,9 @@
       note: 'M9 9L24 12L39 8L40 37L25 41L9 37ZM24 13L25 40M14 16L19 17M14 21L19 22M30 30Q25 18 36 17Q37 28 30 30M28 33L34 21',
       home: 'M5 22L23 6L43 22M10 19L11 40L37 40L38 19M18 39L18 27L28 27L29 39M15 20L23 13L31 20M7 24L6 38',
       camera: 'M7 17L16 17L20 10L29 11L33 17L42 18L41 38L7 39ZM30 28C31 17 15 17 16 28C16 39 32 36 30 27M35 21L37 21M10 19L14 19',
-      leaf: 'M10 37C1 12 28 5 40 7C40 30 26 42 12 35M8 43Q18 24 34 13M17 29L15 21M22 23L31 24M27 18L27 13'
+      leaf: 'M10 37C1 12 28 5 40 7C40 30 26 42 12 35M8 43Q18 24 34 13M17 29L15 21M22 23L31 24M27 18L27 13',
+      sun: 'M31 23C32 11 14 12 15 24C15 37 33 35 31 23M23 4L23 9M23 39L23 44M4 24L9 24M38 24L44 24M9 9L13 13M35 35L39 39M9 39L13 35M35 13L39 9',
+      calendar: 'M9 12L39 11L40 40L8 39ZM9 20L39 19M16 7L16 15M31 7L31 15M15 26L19 26M27 26L31 26M15 33L19 33M27 33L31 33'
     };
     return `<svg class="sk-ink-icon" viewBox="0 0 48 48" width="${size}" height="${size}" fill="none" aria-hidden="true"><path d="M8 18Q12 6 29 9Q43 9 39 28Q37 42 19 39Q4 37 8 18Z" fill="currentColor" opacity=".09"/><path d="${drawings[kind] || drawings.note}" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   }
@@ -130,6 +132,17 @@
       if (label) label.textContent = '草木相伴 · 植物档案';
       const symbol = page.querySelector('.v3-insight>span');
       if (symbol) symbol.innerHTML = inkIcon('water', 36);
+      const handbook = page.querySelector('.v48-detail-help');
+      if (handbook) {
+        handbook.classList.add('fl-handbook');
+        handbook.querySelector('b').textContent = '随手翻翻 · 养护手册';
+        handbook.querySelector('small').textContent = '水分、光照与叶片的细微变化';
+        handbook.querySelectorAll('button').forEach(button => {
+          const care = button.dataset.action === 'v48-local-care';
+          button.innerHTML = `${inkIcon(care ? 'note' : 'health', 34)}<span><strong>${care ? '养护指南' : '状态排查'}</strong><small>${care ? '读懂它的习性' : '从叶片找线索'}</small></span><i aria-hidden="true">↗</i>`;
+        });
+        handbook.insertAdjacentHTML('beforeend', '<p class="fl-handbook-foot">已收录在手册中，离线也能翻阅。</p>');
+      }
     }
     return result;
   };
@@ -157,11 +170,120 @@
   const previousModal = modal;
   modal = function(...args) {
     const result = previousModal(...args);
+    const dialog = document.querySelector('#modal-root .modal');
+    if (dialog) {
+      dialog.classList.add('fl-dialog');
+      // A separate scrolling body keeps the title visible without covering content.
+      const body = document.createElement('div'); body.className = 'fl-dialog-body';
+      [...dialog.children].filter(node => !node.classList.contains('modal-header')).forEach(node => body.append(node));
+      dialog.append(body);
+    }
     document.querySelectorAll('.v3-action-grid>button,.v2-care-option').forEach(option => {
       const type = option.dataset.type || option.querySelector('input')?.value;
       const symbol = option.querySelector('span');
       if (type && symbol) symbol.innerHTML = careDrawing(type, 32);
     });
+    return result;
+  };
+  const previousPlantForm = plantForm;
+  plantForm = function(...args) {
+    const result = previousPlantForm(...args), form = document.getElementById('plant-form');
+    if (!form) return result;
+    form.classList.add('fl-plant-form');
+    const grid = form.querySelector('.form-grid'), fields = [...grid.children];
+    const groups = [
+      ['一', '植物名笺', '记下名字，留一张初见的照片', 'leaf', ['name', 'latin', 'image']],
+      ['二', '安家条件', '为它找到合适的一角', 'home', ['location', 'light', 'status']],
+      ['三', '养护节奏', '观察盆土，让照料有据可循', 'water', ['interval', 'lastWatered', 'reminder']],
+      ['四', '入园小记', '收藏与它有关的点滴', 'note', ['acquired', 'price', 'source', 'tags', 'notes']]
+    ];
+    for (const [number, title, hint, icon, names] of groups) {
+      const section = document.createElement('fieldset'); section.className = 'fl-form-section';
+      section.innerHTML = `<legend><span>${number}</span>${title}</legend><p class="fl-form-hint">${hint}${inkIcon(icon, 34)}</p><div class="fl-form-fields"></div>`;
+      for (const name of names) {
+        const field = fields.find(node => node.querySelector(`[name="${name}"]`));
+        if (field) { field.dataset.field = name; section.lastElementChild.append(field); }
+      }
+      grid.append(section);
+    }
+    const preview = form.querySelector('#plant-preview');
+    if (preview && !preview.querySelector('img')) preview.innerHTML = `${inkIcon('camera', 34)}<span>留一张它的模样</span>`;
+    const file = form.querySelector('#plant-image');
+    if (file) {
+      file.hidden = true;
+      const chooser = document.createElement('div'); chooser.className = 'fl-file-row';
+      chooser.innerHTML = '<button type="button" class="outlined-btn">＋ 选择照片</button><span>拍摄或从相册选择</span>';
+      chooser.querySelector('button').addEventListener('click', () => file.click());
+      file.addEventListener('change', () => { chooser.querySelector('span').textContent = file.files?.[0]?.name || '拍摄或从相册选择'; });
+      file.after(chooser);
+    }
+    form.querySelectorAll('.v46-segment').forEach(button => {
+      const kind = { location: 'home', light: 'sun', status: 'leaf', interval: 'calendar', source: 'feed' }[button.dataset.key];
+      if (button.firstElementChild) button.firstElementChild.innerHTML = inkIcon(kind, 22);
+    });
+    return result;
+  };
+  const capturePlaceholder = (title, hint) => `<span class="fl-capture-drawing">${inkIcon('camera', 60)}</span><strong>${title}</strong><small>${hint}</small>`;
+  const previousRecognize = recognizeView;
+  recognizeView = function() {
+    const root = document.createElement('div'); root.innerHTML = previousRecognize();
+    root.querySelectorAll('.v51-engine').forEach(button => {
+      const icon = button.querySelector('svg');
+      if (icon) icon.outerHTML = inkIcon(button.dataset.action === 'v51-plantnet' ? 'camera' : 'leaf', 32);
+    });
+    root.querySelectorAll('.v50-recognition-modes button').forEach((button, index) => {
+      const icon = button.querySelector('svg'); if (icon) icon.outerHTML = inkIcon(['camera', 'health', 'note'][index], 25);
+    });
+    const plantnetLabel = root.querySelector('[data-action="v51-plantnet"] small');
+    if (plantnetLabel) plantnetLabel.textContent = ui.v52PlantnetOpen ? '上传一张植物照片' : '拍照辨认 · 物种比对';
+    const drop = root.querySelector('#rec-dropzone');
+    if (drop && !drop.querySelector('img')) {
+      drop.querySelector('.big-icon')?.remove(); drop.querySelector('h3')?.remove(); drop.querySelector('p')?.remove();
+      drop.insertAdjacentHTML('afterbegin', `<div class="fl-capture-empty">${capturePlaceholder('拍一张植物照片', '叶片、花果，或它完整的模样')}</div>`);
+    }
+    const placeholder = root.querySelector('.v53-photo-placeholder');
+    if (placeholder) { placeholder.classList.add('fl-capture-empty'); placeholder.innerHTML = capturePlaceholder('拍一张植物照片', '让镜头靠近，留住清晰的细节'); }
+    const plantnetTitle = root.querySelector('.v52-panel-heading h2');
+    if (plantnetTitle) plantnetTitle.textContent = '从一片叶，认识一株植物';
+    const privacy = root.querySelector('.v47-upload-privacy');
+    if (privacy) privacy.textContent = '选好照片，点击开始识别后才会上传。';
+    return root.innerHTML;
+  };
+  const previousAssistant = v2aiModal;
+  v2aiModal = function(...args) {
+    const result = previousAssistant(...args), box = document.querySelector('#modal-root .v2-ai-modal');
+    if (!box) return result;
+    box.classList.add('fl-assistant');
+    box.closest('.modal').classList.add('fl-assistant-dialog');
+    const media = box.querySelector('.v48-ai-media'), field = media?.querySelector('.field');
+    const preview = box.querySelector('#v2-ai-photo-preview'), input = box.querySelector('#v2-ai-image');
+    if (field && preview && input) {
+      // Keep the original file input and chooser listener; only one preview is visible.
+      media.querySelector('.v50-photo-preview')?.remove();
+      field.querySelector('label')?.remove(); field.querySelector('.v49-upload-caption')?.remove();
+      field.classList.add('fl-assistant-photo');
+      preview.classList.add('fl-capture-empty', 'v50-photo-preview');
+      if (!preview.querySelector('img')) preview.innerHTML = capturePlaceholder('添一张近照', '叶片、茎部或整体都可以');
+      field.prepend(preview);
+      const picker = field.querySelector('.v49-file-button');
+      if (picker) { picker.classList.add('outlined-btn'); picker.textContent = '＋ 选择照片'; }
+      media.querySelector('.v48-ai-medialabel').textContent = /^(identify|identification)$/.test(args[1] || '') ? '一 · 植物照片' : '一 · 观察照片（可选）';
+    }
+    const questionLabel = box.querySelector('.v48-ai-text .v48-ai-medialabel');
+    if (questionLabel) questionLabel.textContent = '二 · 想了解什么';
+    box.querySelector('.v48-ai-lede')?.insertAdjacentHTML('afterbegin', '<span class="fl-eyebrow">草木问答</span>');
+    return result;
+  };
+  const topicInk = id => /water|humidity|rot/.test(id) ? 'water' : /light|temperature|dry/.test(id) ? 'sun' : /soil|feed|repot|growth/.test(id) ? 'feed' : id === 'prune' ? 'prune' : 'health';
+  const previousLibrary = v48Knowledge;
+  v48Knowledge = function(...args) {
+    const result = previousLibrary(...args), library = document.querySelector('.v48-library');
+    if (library) {
+      library.classList.add('fl-library');
+      library.querySelectorAll('.v48-library-grid>button').forEach(button => {
+        button.querySelector('.v48-symbol').innerHTML = inkIcon(topicInk(button.dataset.topic), 34);
+      });
+    }
     return result;
   };
   function careCard(plant, task, day, log) {
