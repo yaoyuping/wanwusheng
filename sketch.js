@@ -50,25 +50,66 @@
   atlasView = botanicalPage(atlasView, 'atlas', '.page-heading', '山野拾遗', '记下一次驻足，收藏一段相遇。', 'plum');
   recognizeView = botanicalPage(recognizeView, 'recognize', '.v50-identify-head', '识得草木', '从一张照片，认识眼前的生命。', 'camellia');
   settingsView = botanicalPage(settingsView, 'settings', '.page-heading', '手记小笺', '安放日常，也珍藏每一次记录。', 'plum');
-  function tone(type) { return /浇水|盆土/.test(type) ? 'water' : /施肥|换盆/.test(type) ? 'feed' : /病|虫/.test(type) ? 'health' : 'note'; }
-  function preview(plant, type) {
-    return imageSrc(plant?.image) ? imgTag(plant.image, plant.name) : `<span class="sk-photo-placeholder">${v50Icon(tone(type) === 'water' ? 'drop' : 'sprout', 29)}</span>`;
+  function tone(type) { return /浇水|盆土/.test(type) ? 'water' : /施肥|换盆/.test(type) ? 'feed' : /病|虫/.test(type) ? 'health' : /修剪/.test(type) ? 'prune' : 'note'; }
+  // Small pen-and-wash drawings, shared by care categories and navigation.
+  function inkIcon(kind, size = 24) {
+    const drawings = {
+      water: 'M13 24Q23 22 32 24L30 39Q22 42 15 38ZM14 27C2 17 2 39 15 35M31 29L39 18L44 20L32 35M19 23L19 18L27 18L28 23M40 26L39 29M45 29L44 32M17 27Q22 25 28 27',
+      health: 'M33 29C48 9 19 2 12 15C3 33 28 42 35 27M33 33L43 43M20 29Q15 18 29 15Q32 27 20 29M18 32L27 18M21 26L21 21M23 23L28 22',
+      feed: 'M13 26Q23 24 35 26L32 40Q23 43 16 39ZM12 24L36 24L36 29L13 29ZM24 23Q23 12 29 7M25 16Q14 18 13 9Q23 8 25 16M26 13Q29 3 37 6Q36 15 26 13M20 33L20 37',
+      prune: 'M16 28Q3 26 7 37Q11 44 19 36Q22 28 15 28M29 29Q41 24 42 34Q43 43 33 40Q26 37 29 29M19 31L36 7Q36 17 25 29M29 32L12 9Q12 20 22 29M23 28L24 29',
+      note: 'M9 9L24 12L39 8L40 37L25 41L9 37ZM24 13L25 40M14 16L19 17M14 21L19 22M30 30Q25 18 36 17Q37 28 30 30M28 33L34 21',
+      home: 'M5 22L23 6L43 22M10 19L11 40L37 40L38 19M18 39L18 27L28 27L29 39M15 20L23 13L31 20M7 24L6 38',
+      camera: 'M7 17L16 17L20 10L29 11L33 17L42 18L41 38L7 39ZM30 28C31 17 15 17 16 28C16 39 32 36 30 27M35 21L37 21M10 19L14 19',
+      leaf: 'M10 37C1 12 28 5 40 7C40 30 26 42 12 35M8 43Q18 24 34 13M17 29L15 21M22 23L31 24M27 18L27 13'
+    };
+    return `<svg class="sk-ink-icon" viewBox="0 0 48 48" width="${size}" height="${size}" fill="none" aria-hidden="true"><path d="M8 18Q12 6 29 9Q43 9 39 28Q37 42 19 39Q4 37 8 18Z" fill="currentColor" opacity=".09"/><path d="${drawings[kind] || drawings.note}" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
   }
-  function taskCard(task, day, log = null) {
-    const plant = state.plants.find(item => item.id === task.plantId), action = task.generated ? 'v59-toggle-check' : 'v2-toggle-task';
-    const name = plant?.name || task.name || '', type = task.type || '养护待办', late = !task.done && day < stamp();
-    const attrs = `data-action="${action}" data-id="${esc(task.generated ? task.plantId : task.id)}" data-day="${esc(day)}" data-log-id="${esc(task.logId || '')}"`;
-    const label = task.done ? '恢复' : task.generated ? '记录结果' : '完成';
-    const note = log?.note || task.note, time = log?.time || task.time;
+  function preview(plant, type) {
+    return imageSrc(plant?.image) ? imgTag(plant.image, plant.name) : `<span class="sk-photo-placeholder">${careDrawing(type, 36)}</span>`;
+  }
+  const careDrawing = (type, size) => inkIcon(/拍照/.test(type) ? 'camera' : /观察|黄叶/.test(type) ? 'leaf' : tone(type), size);
+  const previousLogCard = v3LogCard;
+  v3LogCard = function(log) {
+    const root = document.createElement('div'); root.innerHTML = previousLogCard(log);
+    root.querySelector('.v3-log-card')?.classList.add('sk-' + tone(log.action || ''));
+    const symbol = root.querySelector('.v3-log-symbol');
+    if (symbol) symbol.innerHTML = careDrawing(log.action || '', 30);
+    return root.innerHTML;
+  };
+  const previousModal = modal;
+  modal = function(...args) {
+    const result = previousModal(...args);
+    document.querySelectorAll('.v3-action-grid>button,.v2-care-option').forEach(option => {
+      const type = option.dataset.type || option.querySelector('input')?.value;
+      const symbol = option.querySelector('span');
+      if (type && symbol) symbol.innerHTML = careDrawing(type, 32);
+    });
+    return result;
+  };
+  function careCard(plant, task, day, log) {
+    const name = plant?.name || task?.name || '', type = log?.action || task?.type || '养护记录';
+    const late = task && !task.done && day < stamp(), done = Boolean(log || task?.done);
+    const action = task?.generated ? 'v59-toggle-check' : 'v2-toggle-task';
+    const attrs = task ? `data-action="${action}" data-id="${esc(task.generated ? task.plantId : task.id)}" data-day="${esc(day)}" data-log-id="${esc(task.logId || '')}"` : '';
+    const label = task?.done ? '恢复' : task?.generated ? '记录结果' : '完成';
+    const note = log?.note || task?.note, time = log?.time || task?.time;
     const photo = log && imageSrc(log.image) ? `<button type="button" class="sk-log-photo" data-action="v57-view-plant-photo" data-id="${esc(plant.id)}" data-log-id="${esc(log.id)}" aria-label="查看养护照片大图">${imgTag(log.image, plant.name)}</button>` : '';
-    return `<article class="sk-task sk-${tone(type)} ${task.done ? 'is-done' : ''} ${late ? 'is-overdue' : ''}" ${log ? `data-record-key="${esc(JSON.stringify([plant.id, log.id]))}"` : ''}>
-      <div class="sk-task-main"><div class="sk-task-photo">${preview(plant, type)}</div><div class="sk-task-copy"><h3>${esc(type)}${name ? ` <span>·</span> ${esc(name)}` : ''}</h3><div class="sk-task-meta">${time ? `<time>${esc(time)}</time>` : ''}<span class="sk-status">${task.done ? '已完成' : late ? '待补做' : '待完成'}</span>${late ? '<small>已过计划日期</small>' : task.generated && !task.done ? '<small>先看看盆土</small>' : ''}</div>${note ? `<p>${esc(note)}</p>` : ''}${photo}${log ? window.yiyuCare.correctionButton(plant.id, log) : ''}</div></div>
-      <div class="sk-task-actions"><button type="button" class="v59-task-check" role="checkbox" aria-checked="${Boolean(task.done)}" aria-label="${esc(label + name + '的' + type)}" ${attrs}>${task.done ? '✓' : ''}</button><button type="button" class="v2-text-button sk-task-complete" ${attrs}>${label}</button>${plant ? `<button type="button" class="sk-plant-link" data-action="v2-open-plant" data-id="${esc(plant.id)}">查看植物 ↗</button>` : ''}<button type="button" class="v59-delete sk-task-delete" data-action="v59-delete-task" data-id="${esc(task.id)}" data-plant-id="${esc(task.plantId || '')}" data-generated="${task.generated ? '1' : '0'}" data-log-id="${esc(task.logId || '')}" aria-label="删除${esc(type)}${log ? '记录' : '待办'}">删除</button></div>
+    const weather = log ? [log.weather, log.temperature, log.humidity].filter(Boolean).map(esc).join(' · ') : '';
+    const deletion = task ? `data-action="v59-delete-task" data-id="${esc(task.id)}" data-plant-id="${esc(task.plantId || '')}" data-generated="${task.generated ? '1' : '0'}" data-log-id="${esc(task.logId || '')}"` : `data-action="v59-delete-log" data-id="${esc(plant.id)}" data-log-id="${esc(log.id)}"`;
+    return `<article class="sk-care-card ${task ? 'sk-task' : 'sk-log'} sk-${tone(type)} ${done ? 'is-done' : ''} ${late ? 'is-overdue' : ''}" ${log ? `data-record-key="${esc(JSON.stringify([plant.id, log.id]))}"` : ''}>
+      <span class="sk-card-drawing" aria-hidden="true">${careDrawing(type, 68)}</span>
+      <div class="sk-task-main"><div class="sk-task-photo">${preview(plant, type)}</div><div class="sk-task-copy"><span class="sk-care-kind">${esc(type)}</span><h3>${esc(name || '养护手记')}</h3><div class="sk-task-meta">${time ? `<time>${esc(time)}</time>` : ''}<span class="sk-status">${task ? task.done ? '已完成' : late ? '待补做' : '待完成' : '已记录'}</span>${late ? '<small>已过计划日期</small>' : task?.generated && !done ? '<small>先看看盆土</small>' : ''}</div></div></div>
+      ${note || photo || weather ? `<div class="sk-care-entry">${note ? `<p>${esc(note)}</p>` : ''}${photo}${weather ? `<small>${weather}</small>` : ''}</div>` : ''}
+      ${log ? window.yiyuCare.correctionButton(plant.id, log) : ''}
+      <div class="sk-task-actions">${task ? `<span class="sk-completion-control"><button type="button" class="v59-task-check" role="checkbox" aria-checked="${Boolean(task.done)}" aria-label="${esc(label + name + '的' + type)}" ${attrs}>${task.done ? '✓' : ''}</button><button type="button" class="v2-text-button sk-task-complete" ${attrs}>${label}</button></span>` : ''}${plant ? `<button type="button" class="sk-plant-link" data-action="v2-open-plant" data-id="${esc(plant.id)}">查看植物 ↗</button>` : ''}<button type="button" class="v59-delete sk-task-delete" ${deletion} aria-label="删除${esc(type)}${log ? '记录' : '待办'}">删除</button></div>
     </article>`;
   }
+  function taskCard(task, day, log = null) {
+    return careCard(state.plants.find(item => item.id === task.plantId), task, day, log);
+  }
   function logCard(log, plant) {
-    const photo = imageSrc(log.image) ? `<button type="button" class="sk-log-photo" data-action="v57-view-plant-photo" data-id="${esc(plant.id)}" data-log-id="${esc(log.id)}" aria-label="查看养护照片大图">${imgTag(log.image, plant.name)}</button>` : '';
-    return `<article class="sk-log" data-record-key="${esc(JSON.stringify([plant.id, log.id]))}"><span class="sk-log-symbol">${v50Icon(tone(log.action || '') === 'water' ? 'drop' : 'leaf', 20)}</span><div class="sk-log-copy"><b>${esc(log.action || '养护')} · ${esc(plant.name)}</b>${log.time ? `<time>${esc(log.time)}</time>` : ''}${log.note ? `<p>${esc(log.note)}</p>` : ''}${photo}${window.yiyuCare.correctionButton(plant.id, log)}</div><button type="button" class="v59-delete" data-action="v59-delete-log" data-id="${esc(plant.id)}" data-log-id="${esc(log.id)}" aria-label="删除${esc(plant.name)}的养护记录">删除</button></article>`;
+    return careCard(plant, null, log.date, log);
   }
   function monthGrid(selected, taskDays, logDays) {
     const month = ui.calendarMonth || selected.slice(0, 7), first = month + '-01', start = weekStart(first);
@@ -145,5 +186,15 @@
   render = function() {
     document.body.classList.toggle('sk-care-open', ui.tab === 'care');
     oldRender();
+    const navIcons = { home: 'home', atlas: 'note', recognize: 'camera', plants: 'leaf', care: 'water' };
+    document.querySelectorAll('#desktop-nav [data-nav], #mobile-nav [data-nav]').forEach(button => {
+      const kind = navIcons[button.dataset.nav], icon = button.querySelector('svg');
+      if (kind && icon) icon.outerHTML = inkIcon(kind, 28);
+    });
+    document.querySelectorAll('.v50-shortcuts>button').forEach(button => {
+      const kind = button.dataset.nav === 'recognize' ? 'camera' : button.dataset.action === 'v48-local-issues' ? 'health' : button.dataset.action === 'new-sighting' ? 'leaf' : 'note';
+      const symbol = button.querySelector('.v50-action-illustration');
+      if (symbol) symbol.innerHTML = inkIcon(kind, 36);
+    });
   };
 })();
