@@ -66,6 +66,7 @@ try {
     return faces.length === 1 && faces[0].status === 'loaded';
   });
   assert.equal(offlineFont, true, 'The local title font is available after an offline reopening');
+  assert.ok(await page.locator('link[href^="surfaces.css"]').evaluate(link => Boolean(link.sheet?.cssRules.length)), 'The shared theme is available after an offline reopening');
   await page.locator('.plant-card').click();
   await page.locator('[data-action="v3-action-sheet"]').click();
   await page.locator('[data-action="v3-quick-log"][data-type="生长观察"]').click();

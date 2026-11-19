@@ -1,0 +1,151 @@
+/* Shared across every route and dialog. Loaded after the historical page styles. */
+:root {
+  --ui-surface: #fcfbf5;
+  --ui-wash: #edf1e4;
+  --ui-radius: 20px;
+  --ui-control-radius: 12px;
+}
+
+/* No pressed paper edges or inset frames anywhere in the application. */
+html body :is(#app,#modal-root,#sidebar,#mobile-nav,#toast-root,.topbar,#v57-lightbox) *,
+html body :is(#app,#modal-root,#sidebar,#mobile-nav,#toast-root,.topbar,#v57-lightbox) *::before,
+html body :is(#app,#modal-root,#sidebar,#mobile-nav,#toast-root,.topbar,#v57-lightbox) *::after {
+  box-shadow: none !important;
+}
+html body :is(#app,#modal-root,#sidebar,#mobile-nav,#toast-root,.topbar,#v57-lightbox) :is(button,[role="button"],.outlined-btn) {
+  border: 0 !important;
+  border-radius: var(--ui-control-radius) !important;
+  box-shadow: none !important;
+}
+html body :is(#app,#modal-root,#sidebar,#mobile-nav,#toast-root,.topbar,#v57-lightbox) :is(button,[role="button"]):focus-visible,
+html body :is(#app,#modal-root) :is(input,select,textarea,summary):focus-visible {
+  outline: 2px solid #6a865d !important;
+  outline-offset: 3px !important;
+}
+html body :is(#app,#modal-root) :is(.primary-btn,.outlined-btn,.ghost-btn,.v50-primary,.sk-add-task,.sk-filter,.v3-detail-quick,.v3-detail-ai,.v2-text-button,.v3-action-grid>button,.v2-care-option)::after {
+  display: none !important;
+}
+html body :is(#app,#modal-root) :is(.v50-text-link,.sk-plant-link,.v56-visit-actions button,.v48-bottom-actions .outlined-btn) {
+  background: transparent !important;
+  color: #526f48 !important;
+}
+html body :is(#app,#modal-root) :is(.filter-chip,.v4-tag-chip,.v4-tag-suggestion,.v46-segment,.v2-care-option,.v3-action-grid>button) {
+  border-radius: 12px !important;
+}
+html body :is(#app,#modal-root) :is(.v2-care-option:has(input:checked),.v3-action-grid>button:hover) {
+  background: #dfe9d2 !important;
+}
+
+/* Surface shapes are shared by home, collections, records, tools and settings. */
+html body :is(#app,#modal-root) :is(
+  .v50-hero,.v50-today-panel,.v50-shortcuts>button,.fl-atlas .fl-heading,
+  .plant-card,.atlas-card,.v3-info-card,.v3-profile-notes,.v3-log-card,
+  .v56-place-card,.v56-visit,.v56-record-cover,.v56-guide-cover,
+  .v52-plantnet-panel,.v53-deepseek-panel,.v50-recognition-empty,.v453-species-card,
+  .v54-encyclopedia,.v54-guide,.v54-summary,.v54-chapters>details,.v56-taxonomy,
+  .sk-calendar,.sk-care-card,.sk-care-roster,.sk-day-empty,.care-item,.empty,.v50-empty,
+  .panel,.yiyu-vault,.v4-location-settings,.banner,.v48-local-warning,
+  .v48-library-grid>button,.v48-check-row,.v2-ai-answer,.v2-ai-error,.v2-ai-loading,.v47-task-hint
+) {
+  border: 0 !important;
+  border-radius: var(--ui-radius) !important;
+  box-shadow: none !important;
+}
+html body :is(#app,#modal-root) :is(.v50-today-panel,.v3-info-card,.v3-log-card,.v56-visit,.panel,.yiyu-vault,.v52-plantnet-panel,.v53-deepseek-panel) {
+  background-color: var(--ui-surface) !important;
+}
+html body #app :is(.v50-hero,.sk-care-card)::after,
+html body #app .v56-visit::before { display: none !important; }
+html body #app .v50-hero { border-radius: 28px !important; }
+html body #app .v50-well-icon { border: 0 !important; }
+html body #app .v453-taxonomy span { border: 0 !important; background: var(--ui-wash); }
+html body #app .fl-book-spine { border: 0 !important; background: transparent; }
+html body #app :is(.fl-chapter-number,.fl-red-seal,.fl-form-section legend>span) {
+  border: 0 !important; background: #eee3d1; border-radius: 9px !important; transform: none;
+}
+html body #app .fl-atlas .fl-heading::after { display: none; }
+html body #app :is(.fl-sheet-heading,.v56-section-title) { border: 0 !important; }
+html body #app .v3-insight { border: 0 !important; border-radius: 16px; }
+html body #app .v48-detail-help { border: 0 !important; background: transparent !important; }
+
+/* Photography uses the full canvas; no matting or small framed thumbnails. */
+html body :is(#app,#modal-root) :is(
+  .plant-card,.atlas-card,.card-photo,.v3-detail-photo,.v56-record-cover,.v56-guide-cover,
+  .v56-visit-photo,.sk-task-photo,.sk-log-photo,.v3-album-photo,.v57-draft-photo,
+  .v3-log-photo,.v2-ai-plantline img,#plant-preview img
+) {
+  border: 0 !important; outline: 0; padding: 0; box-shadow: none !important;
+  border-radius: 16px !important; transform: none !important;
+}
+html body #app :is(.plant-card,.atlas-card) { border-radius: 22px !important; }
+html body #app :is(.plant-card,.atlas-card) .card-photo { border-radius: inherit !important; }
+html body #app :is(.v56-visit-photo,.sk-task-photo,.sk-log-photo,.v3-log-photo) img {
+  border-radius: inherit !important;
+}
+html body #app :is(.v3-detail-cover-label,.v56-record-cover>span,.v56-record-head>strong,.v56-count-badge,.v56-first-pill,.v56-place-pill,.mini-state,.v57-status-badge) {
+  border: 0 !important; border-radius: 9px !important; box-shadow: none !important; transform: none;
+}
+html body #app .v3-detail-cover-label { background: #334b39a8; }
+
+/* Search, upload and input areas are identifiable by a gentle wash. */
+html body :is(#app,#modal-root) :is(.searchbox,.fl-atlas .searchbox) {
+  border: 0 !important; border-radius: 16px !important; background: #fbfcf5 !important;
+}
+html body :is(#app,#modal-root) :is(#rec-dropzone,.v53-ai-photo-frame,.fl-assistant-photo,.upload-preview,.v57-upload-area) {
+  border: 0 !important; border-radius: 18px !important; box-shadow: none !important;
+  background-color: #ebf0df !important;
+}
+html body :is(#app,#modal-root) :is(input,textarea,select):not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="file"]) {
+  border: 0 !important; border-radius: 12px !important; box-shadow: none !important;
+  background-color: #eef1e6 !important; color: #43583d;
+  font-size: 16px !important; min-width: 0; max-width: 100%;
+}
+html body :is(#app,#modal-root) .searchbox input { background: transparent !important; }
+html body :is(#app,#modal-root) input::file-selector-button {
+  border: 0 !important; border-radius: 12px !important; background: #e4ebd8; color: #506c44;
+}
+html body #modal-root input[type="file"] {
+  border: 0 !important; border-radius: 12px !important;
+}
+html body :is(#app,#modal-root) :is(.v4-tags-field,.v49-file-picker,.v51-ai-plant-select) {
+  border: 0 !important; border-radius: 16px !important;
+}
+html body #modal-root .modal {
+  border: 0 !important; border-radius: 24px !important; background: var(--ui-surface) !important;
+}
+html body #modal-root .modal-header { background: #f5f5e9 !important; }
+html body #modal-root .fl-form-section legend>span {
+  border: 0; border-radius: 8px; background: #eee3d1; transform: none;
+}
+html body #modal-root .v48-ai-prompts>button {
+  border: 0 !important; border-radius: 12px !important; background: #eef1e3 !important;
+}
+html body #modal-root .v48-local-warning { background: #f4eddf; }
+
+/* Calendar and detailed records retain their distinct care colours. */
+html body #app .sk-care-card { background: linear-gradient(115deg,#fcfbf5 35%,var(--card-wash)); }
+html body #app .sk-week-day>strong {
+  border: 0 !important; border-radius: 12px !important; box-shadow: none !important; transform: none;
+}
+html body #app .sk-week-day.is-today:not(.selected)>strong { background: #edf0df; }
+html body #app .sk-month-grid>button { border-radius: 10px !important; }
+html body #app :is(.sk-status,.v3-log-symbol) { border: 0; border-radius: 9px; }
+html body #app .v3-log-daycards { grid-template-columns: minmax(0,1fr); }
+html body #app .v3-log-card { min-width: 0; }
+html body #app .v3-log-header { flex-wrap: wrap; }
+
+/* Less-frequent settings, backup and reminder panels share the same controls. */
+html body #app .fl-settings :is(.yiyu-vault-counters>div,.yiyu-vault-icon,.yiyu-ai-orb,.yiyu-ai-status,.yiyu-backup-status) {
+  border: 0 !important; box-shadow: none !important; border-radius: 12px !important;
+}
+html body #app .fl-settings .yiyu-vault-counters>div { background: #eef1e4; }
+html body #app .fl-settings .banner { background: #edf1e3 !important; }
+html body #app :is(.v4-collection-tools>div,.yiyu-backup-howto>span) {
+  border: 0 !important; border-radius: 12px !important;
+}
+html body #app .v50-weather { border: 0 !important; border-radius: 16px !important; }
+html body :is(#desktop-nav,#mobile-nav) button { border: 0 !important; }
+@media(max-width:700px) {
+  :root { --ui-radius: 18px; }
+  html body #modal-root .modal { border-radius: 20px !important; }
+}
