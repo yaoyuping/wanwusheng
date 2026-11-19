@@ -185,5 +185,5 @@
     }
     return originalAct(action, element);
   };
-  window.yiyuCare = { checkKey, dismissed, checked, nextCheckDate, correctionButton };
+  window.yiyuCare = { checkKey, dismissed, checked, nextCheckDate, correctionButton, normalize };
 })();

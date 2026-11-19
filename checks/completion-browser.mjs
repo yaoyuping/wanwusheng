@@ -15,7 +15,7 @@ try {
       await save(); go('care');
     });
     const circle = page.locator('[role="checkbox"][data-action="v2-toggle-task"][data-id="task-1"]');
-    const checkCircle = page.locator('[role="checkbox"][data-action="v59-toggle-check"]');
+    const checkCircle = page.locator('.sk-day.is-selected [role="checkbox"][data-action="v59-toggle-check"]');
     async function chooseResult(result) {
       await page.locator(`[data-action="v59-finish-care"][data-result="${result}"]`).click();
       await page.locator('#modal-root .v59-care-results').waitFor({ state: 'hidden' });

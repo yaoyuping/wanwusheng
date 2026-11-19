@@ -3,8 +3,8 @@
   "short_name": "万物生",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#f7f7f1",
-  "theme_color": "#28523f",
+  "background_color": "#f1efe5",
+  "theme_color": "#526952",
   "icons": [
     {
       "src": "icon-192.png",
