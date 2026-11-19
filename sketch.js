@@ -69,6 +69,83 @@
     return imageSrc(plant?.image) ? imgTag(plant.image, plant.name) : `<span class="sk-photo-placeholder">${careDrawing(type, 36)}</span>`;
   }
   const careDrawing = (type, size) => inkIcon(/拍照/.test(type) ? 'camera' : /观察|黄叶/.test(type) ? 'leaf' : tone(type), size);
+  const previousHome = homeView;
+  homeView = function() {
+    const root = document.createElement('div'); root.innerHTML = previousHome();
+    const home = root.querySelector('.v50-home');
+    if (!home) return root.innerHTML;
+    home.classList.add('fl-home-folio');
+    home.querySelector('.v50-hero').insertAdjacentHTML('afterbegin', '<span class="fl-book-spine" aria-hidden="true">草木日常</span>');
+    home.querySelector('.v50-hero-meta').innerHTML = `<span class="fl-red-seal" aria-hidden="true">草木</span><span>${esc(v50TodayStr())}</span>`;
+    const chapters = [['一', '照料今日'], ['二', '窗边草木'], ['三', '山野与日常']];
+    home.querySelectorAll('.v50-section-head').forEach((heading, index) => {
+      const [number, label] = chapters[index] || ['·', '草木手记'];
+      heading.insertAdjacentHTML('afterbegin', `<span class="fl-chapter-number" aria-hidden="true">${number}</span>`);
+      heading.querySelector('.v50-section-kicker').textContent = label;
+    });
+    home.querySelectorAll('.v50-care-item').forEach(button => {
+      button.querySelector('.v50-task-symbol').innerHTML = careDrawing(button.textContent, 32);
+    });
+    const descriptions = ['识得一片叶，认识一株植物', '翻一页，了解草木的习性', '留意叶片，记录细微变化', '把偶遇的草木收进手账'];
+    home.querySelectorAll('.v50-shortcuts>button').forEach((button, index) => {
+      const title = button.querySelector('strong'), copy = document.createElement('span');
+      copy.className = 'fl-shortcut-copy'; title.before(copy); copy.append(title);
+      const detail = document.createElement('small'); detail.textContent = descriptions[index]; copy.append(detail);
+    });
+    return root.innerHTML;
+  };
+  // Keep the original field values and edit actions; only compose the paper sheets.
+  const previousProfileInfo = v3ProfileInfo;
+  v3ProfileInfo = function(plant) {
+    const root = document.createElement('div'); root.innerHTML = previousProfileInfo(plant);
+    const rows = [...root.querySelectorAll('.v3-info-row')];
+    const fields = new Map(v3Fields.map((field, index) => [field[1], rows[index]]));
+    const sections = [
+      { title: '草木名笺', note: '认识这位植物伙伴', art: 'plum', icon: 'leaf', keys: ['name', 'status', 'tags'] },
+      { title: '安居与养护', note: '找到适合它的生活节奏', art: 'fern', icon: 'water', keys: ['location', 'light', 'interval', 'reminder'] },
+      { title: '入园小记', note: '收藏相遇时的点滴', art: 'camellia', icon: 'note', keys: ['acquired', 'price', 'source'] }
+    ];
+    const icons = { name: 'leaf', status: 'health', tags: 'note', location: 'home', light: 'leaf', interval: 'water', reminder: 'note', acquired: 'note', price: 'feed', source: 'home' };
+    const sheets = sections.map((section, index) => {
+      const content = section.keys.map(key => {
+        const row = fields.get(key);
+        if (!row) return '';
+        row.dataset.field = key;
+        if (['name', 'status', 'tags', 'interval', 'reminder', 'source'].includes(key)) row.classList.add('fl-info-wide');
+        row.querySelector('.v3-info-icon').innerHTML = inkIcon(icons[key], 28);
+        return row.outerHTML;
+      }).join('');
+      return `<section class="v3-info-card fl-info-sheet fl-sheet-${section.art}" aria-label="${section.title}"><header class="fl-sheet-heading"><span class="fl-chapter-number" aria-hidden="true">${['一', '二', '三'][index]}</span><div><h3>${section.title}</h3><p>${section.note}</p></div>${inkIcon(section.icon, 36)}</header><div class="fl-info-grid">${content}</div></section>`;
+    }).join('');
+    root.querySelector('.v3-info-card')?.remove();
+    return `<div class="fl-profile-sheets">${sheets}</div>${root.innerHTML}`;
+  };
+  const previousPlantDetail = plantDetail;
+  plantDetail = function(...args) {
+    const result = previousPlantDetail(...args);
+    const page = document.querySelector('.v3-plant-detail');
+    if (page) {
+      page.classList.add('fl-plant-folio');
+      const label = page.querySelector('.v3-detail-cover-label');
+      if (label) label.textContent = '草木相伴 · 植物档案';
+      const symbol = page.querySelector('.v3-insight>span');
+      if (symbol) symbol.innerHTML = inkIcon('water', 36);
+    }
+    return result;
+  };
+  const previousSightingDetail = sightingDetail;
+  sightingDetail = function(...args) {
+    const result = previousSightingDetail(...args);
+    const page = document.querySelector('.v56-record-page');
+    if (page) {
+      page.classList.add('fl-record-folio');
+      page.querySelector('.v56-record-cover>span').textContent = '山野拾遗 · 发现手账';
+      page.querySelectorAll('.v56-section-title').forEach((heading, index) => {
+        heading.insertAdjacentHTML('afterbegin', `<span class="fl-chapter-number" aria-hidden="true">${index ? '二' : '一'}</span>`);
+      });
+    }
+    return result;
+  };
   const previousLogCard = v3LogCard;
   v3LogCard = function(log) {
     const root = document.createElement('div'); root.innerHTML = previousLogCard(log);

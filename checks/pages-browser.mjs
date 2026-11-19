@@ -5,7 +5,7 @@ const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', arg
 const photo = 'data:image/png;base64,' + readFileSync(new URL('../icon-192.png', import.meta.url)).toString('base64');
 const base = process.env.YIYU_TEST_URL || 'http://127.0.0.1:8006/';
 try {
-  for (const width of [390, 1440]) {
+  for (const width of [320, 390, 1440]) {
     const context = await browser.newContext({ viewport: { width, height: 900 }, serviceWorkers: 'block' });
     const page = await context.newPage(), errors = [];
     page.on('pageerror', error => errors.push(error.message));
@@ -13,7 +13,7 @@ try {
     await page.goto(base, { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => typeof state === 'object' && state !== null);
     await page.evaluate(async image => {
-      state.plants = [{ id: 'p/中文', name: '我的银杏', latin: 'Ginkgo biloba', image, status: '需关注', interval: 7, logs: [] }];
+      state.plants = [{ id: 'p/中文', name: '我的银杏', latin: 'Ginkgo biloba', image, status: '需关注', interval: 7, location: '客厅窗边', light: '散射光', tags: '观叶 · 新入园', acquired: '2026-10-12', price: 39.95, source: '周末花市', notes: '保留最初的植物手记。', logs: [] }];
       state.sightings = [{ id: 's1', name: '银杏', latin: 'Ginkgo biloba', image, date: stamp(), location: '植物园', notes: '今天的叶片开始变黄。' }];
       await save(); go('plants');
     }, photo);
@@ -30,6 +30,16 @@ try {
     assert.ok(page.url().endsWith('#plants/p%2F%E4%B8%AD%E6%96%87/info'));
     assert.equal(await page.locator('#app .v46-detail-tokens').count(), 1);
     assert.equal(await page.locator('#app .v48-detail-help').count(), 1);
+    assert.equal(await page.locator('.fl-info-sheet').count(), 3);
+    assert.equal(await page.locator('.v3-info-row').count(), 10, 'All original fields survive the grouped layout');
+    for (const [key, expected] of Object.entries({ name: '我的银杏', status: '需关注', interval: '7天（到期检查盆土）', reminder: '开启养护检查', location: '客厅窗边', light: '散射光', tags: '观叶 · 新入园', acquired: '2026年10月12日', price: '¥39.95', source: '周末花市' })) {
+      assert.equal(await page.locator(`[data-field="${key}"] .v3-info-value strong`).innerText(), expected);
+    }
+    assert.ok((await page.locator('.v3-profile-notes').innerText()).includes('保留最初的植物手记。'));
+    await page.locator('.v3-info-row[data-field="location"]').click();
+    await page.locator('#plant-form').waitFor();
+    assert.equal(await page.locator('#plant-form [name="location"]').inputValue(), '客厅窗边', 'Grouped fields still open the original editor');
+    await page.locator('#modal-root [data-action="close-modal"]').first().click();
     await page.locator('[data-action="v2-plant-tab"][data-tab="logs"]').click();
     assert.ok(page.url().endsWith('/logs'));
     await page.reload({ waitUntil: 'domcontentloaded' }); await assertPage('plant');
@@ -69,7 +79,7 @@ try {
     await page.locator('[data-action="page-back"]').click();
     await page.locator('.v56-group-card').waitFor();
     assert.ok(page.url().endsWith('#atlas'));
-    assert.equal(await page.locator('.bottom-nav').isVisible(), width === 390);
+    assert.equal(await page.locator('.bottom-nav').isVisible(), width <= 800);
     // A directly opened page with no prior in-app history has a safe return path.
     await page.evaluate(() => { history.replaceState(null, '', '#plants/p%2F%E4%B8%AD%E6%96%87/photos'); });
     await page.reload({ waitUntil: 'domcontentloaded' }); await assertPage('plant');
@@ -80,6 +90,11 @@ try {
     assert.ok(page.url().endsWith('#plants'));
     await page.goto(base + '#atlas/%E0%A4%A', { waitUntil: 'domcontentloaded' });
     await page.waitForFunction(() => typeof state === 'object' && state && ui.tab === 'home' && !document.body.classList.contains('detail-page-open'));
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+    await page.locator('.v50-hero [data-action="new-plant"]').click();
+    await page.locator('#plant-form').waitFor();
+    await page.locator('#modal-root [data-action="close-modal"]').first().click();
+    await page.screenshot({ path: `/tmp/wanwusheng-folio-home-${width}.png` });
     assert.deepEqual(errors, []);
     console.log(`${width}px: document pages, tabs, deep links, reload, back/forward, edit, observations and guide return passed`);
     await context.close();
