@@ -61,6 +61,11 @@ try {
   page = await context.newPage();
   const offlineResponse = await page.goto(base + '#plants', { waitUntil: 'domcontentloaded', timeout: 5000 });
   assert.equal(offlineResponse.fromServiceWorker(), true);
+  const offlineFont = await page.evaluate(async () => {
+    const faces = await document.fonts.load('16px "Botanical Song"', '养护日历');
+    return faces.length === 1 && faces[0].status === 'loaded';
+  });
+  assert.equal(offlineFont, true, 'The local title font is available after an offline reopening');
   await page.locator('.plant-card').click();
   await page.locator('[data-action="v3-action-sheet"]').click();
   await page.locator('[data-action="v3-quick-log"][data-type="生长观察"]').click();

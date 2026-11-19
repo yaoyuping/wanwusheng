@@ -54,19 +54,21 @@
   function preview(plant, type) {
     return imageSrc(plant?.image) ? imgTag(plant.image, plant.name) : `<span class="sk-photo-placeholder">${v50Icon(tone(type) === 'water' ? 'drop' : 'sprout', 29)}</span>`;
   }
-  function taskCard(task, day) {
+  function taskCard(task, day, log = null) {
     const plant = state.plants.find(item => item.id === task.plantId), action = task.generated ? 'v59-toggle-check' : 'v2-toggle-task';
     const name = plant?.name || task.name || '', type = task.type || '养护待办', late = !task.done && day < stamp();
     const attrs = `data-action="${action}" data-id="${esc(task.generated ? task.plantId : task.id)}" data-day="${esc(day)}" data-log-id="${esc(task.logId || '')}"`;
     const label = task.done ? '恢复' : task.generated ? '记录结果' : '完成';
-    return `<article class="sk-task sk-${tone(type)} ${task.done ? 'is-done' : ''} ${late ? 'is-overdue' : ''}">
-      <div class="sk-task-main"><div class="sk-task-photo">${preview(plant, type)}</div><div class="sk-task-copy"><h3>${esc(type)}${name ? ` <span>·</span> ${esc(name)}` : ''}</h3><div class="sk-task-meta">${task.time ? `<time>${esc(task.time)}</time>` : ''}<span class="sk-status">${task.done ? '已完成' : late ? '待补做' : '待完成'}</span>${late ? '<small>已过计划日期</small>' : task.generated && !task.done ? '<small>先看看盆土</small>' : ''}</div>${task.note ? `<p>${esc(task.note)}</p>` : ''}</div></div>
-      <div class="sk-task-actions"><button type="button" class="v59-task-check" role="checkbox" aria-checked="${Boolean(task.done)}" aria-label="${esc(label + name + '的' + type)}" ${attrs}>${task.done ? '✓' : ''}</button><button type="button" class="v2-text-button sk-task-complete" ${attrs}>${label}</button>${plant ? `<button type="button" class="sk-plant-link" data-action="v2-open-plant" data-id="${esc(plant.id)}">查看植物 ↗</button>` : ''}<button type="button" class="v59-delete sk-task-delete" data-action="v59-delete-task" data-id="${esc(task.id)}" data-plant-id="${esc(task.plantId || '')}" data-generated="${task.generated ? '1' : '0'}" data-log-id="${esc(task.logId || '')}" aria-label="删除${esc(type)}待办">删除</button></div>
+    const note = log?.note || task.note, time = log?.time || task.time;
+    const photo = log && imageSrc(log.image) ? `<button type="button" class="sk-log-photo" data-action="v57-view-plant-photo" data-id="${esc(plant.id)}" data-log-id="${esc(log.id)}" aria-label="查看养护照片大图">${imgTag(log.image, plant.name)}</button>` : '';
+    return `<article class="sk-task sk-${tone(type)} ${task.done ? 'is-done' : ''} ${late ? 'is-overdue' : ''}" ${log ? `data-record-key="${esc(JSON.stringify([plant.id, log.id]))}"` : ''}>
+      <div class="sk-task-main"><div class="sk-task-photo">${preview(plant, type)}</div><div class="sk-task-copy"><h3>${esc(type)}${name ? ` <span>·</span> ${esc(name)}` : ''}</h3><div class="sk-task-meta">${time ? `<time>${esc(time)}</time>` : ''}<span class="sk-status">${task.done ? '已完成' : late ? '待补做' : '待完成'}</span>${late ? '<small>已过计划日期</small>' : task.generated && !task.done ? '<small>先看看盆土</small>' : ''}</div>${note ? `<p>${esc(note)}</p>` : ''}${photo}${log ? window.yiyuCare.correctionButton(plant.id, log) : ''}</div></div>
+      <div class="sk-task-actions"><button type="button" class="v59-task-check" role="checkbox" aria-checked="${Boolean(task.done)}" aria-label="${esc(label + name + '的' + type)}" ${attrs}>${task.done ? '✓' : ''}</button><button type="button" class="v2-text-button sk-task-complete" ${attrs}>${label}</button>${plant ? `<button type="button" class="sk-plant-link" data-action="v2-open-plant" data-id="${esc(plant.id)}">查看植物 ↗</button>` : ''}<button type="button" class="v59-delete sk-task-delete" data-action="v59-delete-task" data-id="${esc(task.id)}" data-plant-id="${esc(task.plantId || '')}" data-generated="${task.generated ? '1' : '0'}" data-log-id="${esc(task.logId || '')}" aria-label="删除${esc(type)}${log ? '记录' : '待办'}">删除</button></div>
     </article>`;
   }
   function logCard(log, plant) {
     const photo = imageSrc(log.image) ? `<button type="button" class="sk-log-photo" data-action="v57-view-plant-photo" data-id="${esc(plant.id)}" data-log-id="${esc(log.id)}" aria-label="查看养护照片大图">${imgTag(log.image, plant.name)}</button>` : '';
-    return `<article class="sk-log"><span class="sk-log-symbol">${v50Icon(tone(log.action || '') === 'water' ? 'drop' : 'leaf', 20)}</span><div class="sk-log-copy"><b>${esc(log.action || '养护')} · ${esc(plant.name)}</b>${log.time ? `<time>${esc(log.time)}</time>` : ''}${log.note ? `<p>${esc(log.note)}</p>` : ''}${photo}${window.yiyuCare.correctionButton(plant.id, log)}</div><button type="button" class="v59-delete" data-action="v59-delete-log" data-id="${esc(plant.id)}" data-log-id="${esc(log.id)}" aria-label="删除${esc(plant.name)}的养护记录">删除</button></article>`;
+    return `<article class="sk-log" data-record-key="${esc(JSON.stringify([plant.id, log.id]))}"><span class="sk-log-symbol">${v50Icon(tone(log.action || '') === 'water' ? 'drop' : 'leaf', 20)}</span><div class="sk-log-copy"><b>${esc(log.action || '养护')} · ${esc(plant.name)}</b>${log.time ? `<time>${esc(log.time)}</time>` : ''}${log.note ? `<p>${esc(log.note)}</p>` : ''}${photo}${window.yiyuCare.correctionButton(plant.id, log)}</div><button type="button" class="v59-delete" data-action="v59-delete-log" data-id="${esc(plant.id)}" data-log-id="${esc(log.id)}" aria-label="删除${esc(plant.name)}的养护记录">删除</button></article>`;
   }
   function monthGrid(selected, taskDays, logDays) {
     const month = ui.calendarMonth || selected.slice(0, 7), first = month + '-01', start = weekStart(first);
@@ -94,21 +96,28 @@
     const visible = [...overdueDays, ...days];
     const taskCount = visible.reduce((n, day) => n + (taskDays.get(day) || []).filter(task => !task.done).length, 0);
     const groups = visible.map(day => {
-      const tasks = (taskDays.get(day) || []).filter(task => (!overdueDays.includes(day) || !task.done) && (!pendingOnly || !task.done));
+      const dayTasks = (taskDays.get(day) || []).filter(task => (!overdueDays.includes(day) || !task.done) && (!pendingOnly || !task.done));
       const logs = pendingOnly || overdueDays.includes(day) ? [] : (logDays.get(day) || []).slice().sort((a, b) => (b.log.time || '').localeCompare(a.log.time || ''));
+      // A completed automatic task and its log refer to the same care event.
+      // Render it once in the records section, without modifying saved history.
+      const linkedTask = (plant, log) => dayTasks.find(task => task.generated && task.done && task.plantId === plant.id && task.logId === log.id);
+      const tasks = dayTasks.filter(task => !logs.some(({ plant, log }) => task === linkedTask(plant, log)));
+      const recordCards = logs.map(({ log, plant }) => {
+        const linked = linkedTask(plant, log);
+        return linked ? taskCard(linked, day, log) : logCard(log, plant);
+      }).join('');
       if (!tasks.length && !logs.length && day !== selected) return '';
       const date = dateOf(day);
-      return `<section class="sk-day ${day === selected ? 'is-selected' : ''}" id="sk-day-${day}" data-day="${day}"><div class="sk-date-label"><span>周${weekdays[(date.getDay() + 6) % 7]}</span><strong>${date.getDate()}</strong><small>${date.getMonth() + 1}月</small>${day === stamp() ? '<em>今天</em>' : ''}</div><div class="sk-day-content">${tasks.map(task => taskCard(task, day)).join('')}${logs.length ? `<div class="sk-record-heading">${v50Icon('book', 16)} 养护记录 <span>${logs.length}</span></div>${logs.map(({ log, plant }) => logCard(log, plant)).join('')}` : ''}${!tasks.length && !logs.length ? `<div class="sk-day-empty">${sprig()}<b>${pendingOnly ? '这天暂无未完成待办' : '这一天，留点时间看看叶子'}</b><p>记录一点变化，就是照料的开始。</p><button type="button" data-action="v2-new-task" data-day="${day}">＋ 添一项养护</button></div>` : ''}</div></section>`;
+      return `<section class="sk-day ${day === selected ? 'is-selected' : ''}" id="sk-day-${day}" data-day="${day}"><div class="sk-date-label"><span>周${weekdays[(date.getDay() + 6) % 7]}</span><strong>${date.getDate()}</strong><small>${date.getMonth() + 1}月</small>${day === stamp() ? '<em>今天</em>' : ''}</div><div class="sk-day-content">${tasks.map(task => taskCard(task, day)).join('')}${logs.length ? `<div class="sk-record-heading">${v50Icon('book', 16)} 养护记录 <span>${logs.length}</span></div>${recordCards}` : ''}${!tasks.length && !logs.length ? `<div class="sk-day-empty">${sprig()}<b>${pendingOnly ? '这天暂无未完成待办' : '这一天，留点时间看看叶子'}</b><p>记录一点变化，就是照料的开始。</p><button type="button" data-action="v2-new-task" data-day="${day}">＋ 添一项养护</button></div>` : ''}</div></section>`;
     }).join('');
     return `<div class="sk-care"><header class="sk-care-heading fl-heading"><div class="fl-heading-copy"><span class="fl-eyebrow">草木岁时</span><h1>养护日历</h1><p>浇水、修枝，慢慢照料四季。</p></div>${illustration('fern')}<button type="button" class="sk-round" data-nav="home" aria-label="返回首页">${ico('home', 20)}</button></header>
       <div class="sk-calendar ${monthOpen ? 'is-expanded' : ''}"><div class="sk-calendar-top"><button type="button" class="sk-month-title" data-action="sk-toggle-month" aria-expanded="${monthOpen}" aria-controls="sk-month-panel">${Number(selected.slice(0, 4))}年${Number(selected.slice(5, 7))}月 <span>${monthOpen ? '⌃' : '⌄'}</span></button><div class="sk-week-actions"><button type="button" data-action="sk-prev-week" aria-label="上一周">‹</button><button type="button" data-action="v2-month-today">今天</button><button type="button" data-action="sk-next-week" aria-label="下一周">›</button></div></div>
       ${monthGrid(selected, taskDays, logDays)}
       <div class="sk-week" aria-label="本周日期">${days.map((day, i) => `<button type="button" class="sk-week-day ${day === selected ? 'selected' : ''} ${day === stamp() ? 'is-today' : ''}" data-action="v2-select-day" data-day="${day}" aria-label="${day}，星期${weekdays[i]}" aria-pressed="${day === selected}"><span>${weekdays[i]}</span><strong>${Number(day.slice(-2))}</strong><small>${esc(lunar(day))}</small><i class="${(taskDays.get(day) || []).length || (logDays.get(day) || []).length ? 'has-activity' : ''}"></i></button>`).join('')}</div></div>
-      <div class="sk-agenda-heading"><div><h2>本周的照料</h2><p>${v2date(start)} — ${v2date(end)} · ${taskCount} 项待完成${overdueDays.length ? '，含之前未完成的待办' : ''}</p></div><button type="button" class="sk-filter ${pendingOnly ? 'active' : ''}" data-action="sk-filter-pending" aria-pressed="${pendingOnly}">${v50Icon('check', 16)} 只看待办</button></div>
+      <div class="sk-agenda-heading"><div><h2>本周的照料</h2><p>${v2date(start)} — ${v2date(end)} · ${taskCount} 项待完成${overdueDays.length ? '，含之前未完成的待办' : ''}</p></div><div class="sk-agenda-tools"><button type="button" class="sk-filter ${pendingOnly ? 'active' : ''}" data-action="sk-filter-pending" aria-pressed="${pendingOnly}">${v50Icon('check', 16)} 只看待办</button><button type="button" class="sk-add-task" data-action="v2-new-task" data-day="${selected}" aria-label="添加养护待办">${ico('plus', 18)}<span>新增待办</span></button></div></div>
       <div class="sk-agenda">${groups}</div>
       <details class="sk-care-roster"><summary>${v50Icon('sprout', 21)} 植物养护清单 <span>${state.plants.length} 株</span></summary><div class="care-list">${state.plants.length ? state.plants.map(careItem).join('') : '<p>添一株植物，把照料的日常记在这里。</p>'}</div></details>
       <p class="sk-care-note">${sprig()} 每次检查后，记下「已浇水」或「仅检查」，让下一次提醒更贴近植物的节奏。</p>
-      <button type="button" class="sk-add-task" data-action="v2-new-task" data-day="${selected}" aria-label="添加养护待办">${ico('plus', 26)}<span>记一项养护</span></button>
     </div>`;
   };
   const oldAct = act;

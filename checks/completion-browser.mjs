@@ -68,7 +68,7 @@ try {
     await page.waitForFunction(() => typeof state === 'object' && state?.plants?.[0]?.id === 'check-plant');
     await page.evaluate(() => go('care'));
     assert.equal(await checkCircle.getAttribute('aria-checked'), 'true', 'Completion survives reloading');
-    const record = page.locator('[data-action="v59-delete-log"]');
+    const record = page.locator('.sk-day.is-selected [data-action="v59-delete-task"][data-log-id]:not([data-log-id=""])');
     page.once('dialog', dialog => dialog.accept()); await record.click();
     await page.locator('[data-action="v59-undo"]').waitFor();
     assert.equal(await checkCircle.getAttribute('aria-checked'), 'false');
