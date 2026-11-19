@@ -62,8 +62,8 @@ try {
   const offlineResponse = await page.goto(base + '#plants', { waitUntil: 'domcontentloaded', timeout: 5000 });
   assert.equal(offlineResponse.fromServiceWorker(), true);
   const offlineFont = await page.evaluate(async () => {
-    const faces = await document.fonts.load('16px "Botanical Song"', '养护日历');
-    return faces.length === 1 && faces[0].status === 'loaded';
+    const faces = await document.fonts.load('16px "Botanical WenKai"', '万物生 · 养护日历');
+    return faces.length === 1 && faces[0].status === 'loaded' && getComputedStyle(document.querySelector('.top-title')).fontFamily.includes('Botanical WenKai');
   });
   assert.equal(offlineFont, true, 'The local title font is available after an offline reopening');
   assert.ok(await page.locator('link[href^="surfaces.css"]').evaluate(link => Boolean(link.sheet?.cssRules.length)), 'The shared theme is available after an offline reopening');

@@ -18,6 +18,10 @@ try {
     await page.route('**/api/ai', route => route.fulfill({ json: { encyclopedia: article, answer: '观察盆土，保持通风。', model: 'test' } }));
     await page.goto(base);
     await page.waitForFunction(() => typeof state === 'object' && state);
+    assert.ok(await page.evaluate(async () => {
+      const faces = await document.fonts.load('24px "Botanical WenKai"', '万物生 · 养护日历');
+      return faces.length === 1 && faces[0].status === 'loaded' && getComputedStyle(document.querySelector('.top-title')).fontFamily.includes('Botanical WenKai');
+    }), 'The bundled WenKai font loads and is used for headings');
     await page.evaluate(image => {
       state.plants = [{ id: 'p', name: '鸟巢蕨', latin: 'Asplenium nidus', image, location: '窗边', interval: 3, lastWatered: v2plusDate(stamp(), -4), acquired: stamp(), tags: '观叶 / 喜湿', status: '健康', notes: '窗边的一片绿。', logs: [{ id: 'l', date: stamp(), action: '病虫害', image, note: '查看叶片。' }] }];
       state.sightings = [{ id: 's', name: '银杏', image, images: [image, image], date: stamp(), notes: '秋天的叶子。', location: '公园' }];

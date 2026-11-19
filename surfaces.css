@@ -1,7 +1,23 @@
 /* Shared across every route and dialog. Loaded after the historical page styles. */
+@font-face {
+  font-family: 'Botanical WenKai';
+  src: url('assets/fonts/botanical-wenkai.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 :root {
-  --ui-surface: #fcfbf5;
-  --ui-wash: #edf1e4;
+  --sk-heading: 'Botanical WenKai', 'Kaiti SC', 'STKaiti', 'Botanical Song', serif;
+  --sk-paper: #f7f1e5;
+  --sk-sheet: #fffdf7;
+  --sk-ink: #304b40;
+  --sk-muted: #626c5e;
+  --sk-green: #315e4c;
+  --sk-clay: #9a513f;
+  --ui-surface: #fffdf7;
+  --ui-wash: #e1ebdf;
+  --ui-rose: #f2e1d9;
+  --ui-gold: #f2e6cb;
   --ui-radius: 20px;
   --ui-control-radius: 12px;
 }
@@ -145,7 +161,99 @@ html body #app :is(.v4-collection-tools>div,.yiyu-backup-howto>span) {
 }
 html body #app .v50-weather { border: 0 !important; border-radius: 16px !important; }
 html body :is(#desktop-nav,#mobile-nav) button { border: 0 !important; }
+
+/* A botanical journal in ink, rose and ochre. Colour carries the hierarchy. */
+html body {
+  background-image: radial-gradient(ellipse at 95% 0,#ead4bc66,transparent 50%),
+    radial-gradient(ellipse at 0 80%,#dce4d666,transparent 48%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)' opacity='.035'/%3E%3C/svg%3E") !important;
+  background-size: 100% 950px,100% 1400px,180px 180px !important;
+  background-repeat: no-repeat,no-repeat,repeat !important;
+}
+html body :is(button,h1,h2,h3,.top-title,.brand strong,.fl-sheet-heading,.sk-month-title) {
+  font-synthesis: none; text-rendering: optimizeLegibility;
+}
+html body :is(.top-title,.brand strong) { color: #2d5142 !important; letter-spacing: .16em !important; }
+html body #app :is(.fl-heading h1,.v50-hero h1,.v50-section-head h2,.fl-sheet-heading h2,.v56-section-title h3,.sk-agenda-title h2) { color: #2f5141 !important; }
+html body #app .v50-hero h1 { letter-spacing: .08em !important; line-height: 1.5 !important; }
+html body #app .v50-hero h1 em { color: #8e4f40 !important; }
+html body #app :is(.v50-hero p,.fl-heading .fl-heading-copy>p) { font: 400 16px/1.85 var(--sk-heading) !important; color: #5c6658 !important; }
+html body :is(#app,#modal-root) :is(.v3-profile-notes p,.v56-visit-note,.v54-summary) { font-family: var(--sk-heading) !important; font-size: 17px !important; line-height: 1.9 !important; color: #3f5346; }
+html body :is(#app,#modal-root,.topbar) :is(.primary-btn,.outlined-btn,.v50-primary,.sk-add-task,.sk-filter,.v3-detail-quick,.v3-detail-ai) { font-size: 16px !important; line-height: 1.5; letter-spacing: .035em; }
+html body :is(#app,#modal-root) :is(.fl-eyebrow,.v50-section-kicker,.v3-note-head,.fl-form-section legend) { color: #97533e !important; }
+html body #app :is(.fl-chapter-number,.fl-red-seal),html body #modal-root .fl-form-section legend>span { background: #e9d2bf; color: #85422f; }
+html body #app .v50-count { background: #ebd7bb !important; color: #70502d !important; border: 0; border-radius: 8px !important; }
+
+html body #app .v50-hero { background: radial-gradient(ellipse at 82% 29%,#d6dec8 0,transparent 48%),linear-gradient(125deg,#f4e5c9,#fff5e5 48%,#edd9c3) !important; }
+html body #app .sk-botanical-plate img { filter: saturate(1.02) contrast(1.04); }
+html body #app .fl-illustration { opacity: 1; filter: saturate(.98); }
+html body #app .fl-heading { border-radius: 22px; background: linear-gradient(112deg,#f3e3cb,#f7eddb 56%,#e5e7d6) !important; }
+html body #app .fl-atlas .fl-heading { background: linear-gradient(112deg,#efdbce,#f9eede 62%,#eee5d1) !important; }
+html body #app .fl-recognize .fl-heading { background: linear-gradient(112deg,#e1e8d9,#f5edda 60%,#e9d8c9) !important; }
+html body #app .fl-settings .fl-heading { background: linear-gradient(112deg,#efddd4,#fbf0e3 68%,#e5e4cf) !important; }
+html body #app .fl-heading::after { border-color: #bca788; opacity: .32; }
+html body #app :is(.v50-weather,.v50-today-mini) { background: #eee1c6 !important; }
+html body #app .v50-weather-glyph { background: #dfc797 !important; color: #75552c; }
+html body #app .v50-task-symbol { background: #d8e5d5 !important; color: #3e654d !important; }
+html body #app .v50-shortcuts>button { background: #dfe9db !important; }
+html body #app .v50-shortcuts>button:nth-child(2) { background: #f1e2c4 !important; }
+html body #app .v50-shortcuts>button:nth-child(3) { background: #efdcd1 !important; }
+html body #app .v50-shortcuts>button:nth-child(4) { background: #dbe8e2 !important; }
+
+/* All controls stay soft, with a strong primary action and clear selected state. */
+html body :is(#app,#modal-root,.topbar) :is(.primary-btn,.top-add,.v50-primary,.sk-add-task,.v3-detail-quick) { background: #315e4c !important; color: #fff9ed !important; }
+html body :is(#app,#modal-root,.topbar) :is(.primary-btn,.v50-primary,.sk-add-task,.v3-detail-quick):hover { background: #244d3d !important; }
+html body :is(#app,#modal-root,.topbar) :is(.outlined-btn,.ghost-btn,.sk-filter,.v3-detail-ai) { background: #eadbc2 !important; color: #684d30 !important; }
+html body :is(#app,#modal-root) :is(.v50-text-link,.sk-plant-link,.v56-visit-actions button,.v48-bottom-actions .outlined-btn) { background: transparent !important; color: #315e4c !important; }
+html body :is(#app,#modal-root) :is(.filter-chip,.v46-segment,.v4-tag-chip,.v4-tag-suggestion) { background: #e6e9d9 !important; color: #475d46 !important; }
+html body :is(#app,#modal-root) :is(.filter-chip.active,.filter-chip.selected,.v46-segment.active) { background: #315e4c !important; color: #fff9ed !important; }
+html body :is(#app,#modal-root) :is(.danger-btn,.sk-delete,.fl-tag-delete) { color: #964b3b !important; }
+html body :is(#app,#modal-root) :is(input,textarea,select):not([type=hidden]):not([type=checkbox]):not([type=radio]):not([type=file]) { background-color: #eeeade !important; color: #384d3e; }
+html body :is(#app,#modal-root) .searchbox { background: #fffaf0 !important; }
+html body :is(#app,#modal-root) .searchbox input { background: transparent !important; }
+html body #modal-root .modal-header { background: #ede4d0 !important; }
+html body #modal-root .v48-ai-prompts>button { background: #e5eadb !important; color: #43593e !important; }
+
+html body #app :is(.fl-plant-folio,.fl-record-folio) { background: #f4eddf !important; }
+html body #app .fl-sheet-heading { border-radius: 14px 14px 22px 6px; }
+html body #app .fl-sheet-plum .fl-sheet-heading { background: linear-gradient(90deg,#f1ddd3f5,#f1ddd3aa),url('assets/botanical/plum.webp') right 38%/100px auto no-repeat; }
+html body #app .fl-sheet-fern .fl-sheet-heading { background: linear-gradient(90deg,#dde6d5f5,#dde6d599),url('assets/botanical/fern.webp') right 35%/90px auto no-repeat; }
+html body #app .fl-sheet-camellia .fl-sheet-heading { background: linear-gradient(90deg,#f0e1c4f5,#f0e1c499),url('assets/botanical/camellia.webp') right 35%/80px auto no-repeat; }
+html body #app .v3-info-icon { background: #dfe8d5 !important; color: #426344 !important; }
+html body #app .v3-profile-notes { background: #f1e2c8 !important; }
+html body #app :is(.v3-plant-foot,.detail-page-header,.v3-detail-tabs) { background: #fff9ee !important; }
+html body #app .v56-place-card { background: #e3eadb !important; }
+html body #app :is(.v56-count-badge,.v56-first-pill,.v56-record-head>strong) { background: #efd9b9; color: #754c2c; }
+html body #app .v54-summary { background: #e5ecde !important; }
+html body #app .v54-chapters>details:nth-child(2n) { background: #f4e9d6 !important; }
+
+html body #app :is(.sk-calendar,.sk-care-roster) { background: #fff9ed !important; }
+html body #app .sk-calendar-top { padding-bottom: 15px; border-color: #dcc6a4; }
+html body #app :is(.sk-week-day.selected>strong,.sk-month-grid>button.selected) { background: #9b5140 !important; color: #fff9ef !important; }
+html body #app .sk-week-day.is-today:not(.selected)>strong { background: #ead5b4; }
+html body #app .sk-water { --card-ink: #34655c; --card-wash: #dbeae2; }
+html body #app .sk-feed { --card-ink: #795523; --card-wash: #f0e2bd; }
+html body #app .sk-health { --card-ink: #914d3e; --card-wash: #f0dbd0; }
+html body #app .sk-prune { --card-ink: #546535; --card-wash: #e3e8ca; }
+html body #app .sk-care-card { background: linear-gradient(115deg,#fffaf0,var(--card-wash)) !important; }
+html body #app .sk-day-empty { background: #e8ecda; }
+html body #app .sk-card-drawing { opacity: .65; }
+html body #app :is(#rec-dropzone,.v53-ai-photo-frame),html body #modal-root .fl-assistant-photo { background: radial-gradient(ellipse at 80% 80%,#cfdbc3,transparent 65%),#e8eddb !important; }
+html body #app .v51-engine { background: #dce7d6 !important; }
+html body #app .v51-engine-secondary { background: #f0ddce !important; }
+html body #app .v51-engine[aria-expanded=true] { background: #c9dbc0 !important; }
+html body #app .v51-engine-secondary[aria-expanded=true] { background: #e6c8b8 !important; }
+html body #app .fl-settings :is(.yiyu-vault,.yiyu-vault-counters>div) { background: #eee4cc !important; }
+html body #app .fl-settings .yiyu-vault-counters>div:nth-child(2n) { background: #dce5d6 !important; }
+
+html body .sidebar { background: #e5e7d7 !important; }
+html body .side-nav .nav-btn.active { background: #ccdbc4 !important; color: #2e523f !important; }
+html body .bottom-nav { background: #fff9ee !important; }
+html body .bottom-nav button.active { color: #8e4938 !important; background: #f1e1cf; }
+html body .bottom-nav button.active::after { background: #9b5140; }
 @media(max-width:700px) {
   :root { --ui-radius: 18px; }
   html body #modal-root .modal { border-radius: 20px !important; }
+  html body #app :is(.v50-hero p,.fl-heading .fl-heading-copy>p) { font-size: 14px !important; }
+  html body :is(#app,#modal-root) :is(.v3-detail-quick,.v3-detail-ai,.v2-text-button) { font-size: 14px !important; }
 }
