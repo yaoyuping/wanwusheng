@@ -5,7 +5,7 @@ const browser = await chromium.launch({ executablePath: '/usr/bin/chromium', arg
 try {
  for (const [device, width] of [['iPhone',390],['desktop',1440]]) {
   const context = await browser.newContext({ viewport:{width,height:1000}, serviceWorkers:'block', ...(device==='iPhone'?{userAgent:'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 Version/17.0 Mobile/15E148 Safari/604.1'}:{}) });
-  const page = await context.newPage(), errors=[], operations=[];let record=null,testSent=0;
+  const page = await context.newPage(), errors=[], operations=[];let record=null,testSent=0,serviceFailure='';
   page.on('pageerror',e=>errors.push(e.message));
   await page.addInitScript(publicKey=>{
    window.permissionCalls=0;
@@ -21,6 +21,11 @@ try {
   },key);
   await page.route('**/api/status',r=>r.fulfill({json:{ready:true}}));
   await page.route('**/api/reminders',r=>{
+   if(serviceFailure==='disabled')return r.fulfill({status:402,headers:{'x-vercel-error':'DEPLOYMENT_DISABLED'},contentType:'text/plain',body:'Payment required\nDEPLOYMENT_DISABLED'});
+   if(serviceFailure==='network')return r.abort('failed');
+   if(serviceFailure==='unauthorized')return r.fulfill({status:401,json:{error:'Unauthorized'}});
+   if(serviceFailure==='invalid')return r.fulfill({contentType:'text/html',body:'<html>Sign in</html>'});
+   if(serviceFailure==='empty')return r.fulfill({json:{}});
    if(r.request().method()==='GET')return r.fulfill({json:{ready:true,publicKey:key}});
    const body=r.request().postDataJSON();operations.push(body);
    if(body.op==='subscribe'){record=body;return r.fulfill({json:{ok:true,count:body.items.length}});}
@@ -57,13 +62,31 @@ try {
   assert.equal(record.items.length,0);
   const backup=await page.evaluate(async()=>JSON.parse(await(await yiyuBuildFile()).file.text()));
   assert.doesNotMatch(JSON.stringify(backup),/synthetic-browser-test|"token"|"subscription"/);
+  const subscribed=await page.evaluate(()=>localStorage.getItem('yiyu-phone-reminders-v59'));
+  for(const [failure,message] of [['disabled','后台已被 Vercel 暂停'],['network','无法连接手机提醒后台'],['unauthorized','未通过验证'],['invalid','后台返回异常'],['empty','后台返回异常']]){
+   serviceFailure=failure;
+   await page.evaluate(()=>window.yiyuPush.scheduleSync());
+   await page.locator('#v59-push-status').filter({hasText:message}).waitFor();
+   assert.equal(await page.evaluate(()=>localStorage.getItem('yiyu-phone-reminders-v59')),subscribed,'A failed sync preserves the existing subscription');
+   await page.locator('[data-action="v59-push-test"]').click();
+   await page.locator('#v59-push-status').filter({hasText:message}).waitFor();
+   assert.equal(testSent,1,'A failed sync must not claim or send a test notification');
+   assert.equal(await page.evaluate(()=>window.permissionCalls),1);
+  }
+  serviceFailure='network';await context.setOffline(true);
+  await page.evaluate(()=>window.yiyuPush.scheduleSync());
+  await page.locator('#v59-push-status').filter({hasText:'当前设备未联网'}).waitFor();
+  serviceFailure='';await context.setOffline(false);
+  await page.locator('#v59-push-status').filter({hasText:'已同步 0 项'}).waitFor();
+  assert.equal(await page.evaluate(()=>localStorage.getItem('yiyu-phone-reminders-v59')),subscribed,'Recovery reuses the existing identity');
+  assert.equal(await page.evaluate(()=>window.permissionCalls),1);
   await page.locator('.v59-push-panel').screenshot({path:`/tmp/yiyu-v59-${width}-push.png`});
   await page.locator('[data-action="v59-push-disable"]').click();
   await page.locator('#v59-push-status').filter({hasText:'云端订阅已删除'}).waitFor();
   assert.equal(record,null);
   assert.equal(await page.evaluate(()=>localStorage.getItem('yiyu-phone-reminders-v59')),null);
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));assert.deepEqual(errors,[]);
-  console.log(device+': install gate, explicit permission, subscribe, test, automatic task/plant sync, private backup and unsubscribe passed (push API simulated)');
+  console.log(device+': install gate, explicit permission, subscribe, test, automatic sync, disabled backend/network/offline/auth/invalid responses, identity preservation, recovery, private backup and unsubscribe passed (push API simulated)');
   await context.close();
  }
 }finally{await browser.close();}
